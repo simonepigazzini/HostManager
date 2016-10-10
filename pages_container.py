@@ -10,6 +10,7 @@ class PagesContainerApp(tkinter.Tk):
     def __init__(self, parent=None):
         ###---create from parent class
         tkinter.Tk.__init__(self, parent)
+        self.grid()
         
         ###---class objects
         self.n_tabs = 0
@@ -17,19 +18,24 @@ class PagesContainerApp(tkinter.Tk):
         self.pages = odict()
         self.notebook = tkinter.ttk.Notebook(self)
         self.notebook.enable_traversal()
-
-        ###---set notebook style
-        tkinter.ttk.Style().theme_use("alt")
+        
+        ###---set notebook style: 'aqua' if available (i.e. on MAC) 'alt' otherwise
+        if "aqua" in tkinter.ttk.Style().theme_names():            
+            tkinter.ttk.Style().theme_use("aqua")
+        else:
+            tkinter.ttk.Style().theme_use("alt")
         tkinter.ttk.Style().configure(".", font='TkDefaultFont 11')
         
-    def new_page(self, name):
+    def addTab(self, name):
         """
         Create new page and insert tab for it in the notebook, returns the newly created page
         """
 
         self.n_tabs += 1
-        self.pages[name] = tkinter.ttk.Frame(self.notebook)
+        self.pages[name] = tkinter.ttk.Frame(self)
         self.notebook.add(self.pages[name], text=name, underline=0)
         self.notebook.pack(expand=1, fill="both")
+        # tkinter.ttk.Style().configure("HM.TFrame", background="black")
+        # self.pages[name].config(style="HM.TFrame")
 
         return self.pages[name]

@@ -10,6 +10,7 @@ from collections import OrderedDict as odict
 
 from pages_container import *
 from insert_page import *
+from customers_overview import *
 
 if __name__ == "__main__":
 
@@ -24,25 +25,27 @@ if __name__ == "__main__":
     if not cursor.fetchone():
         cursor.execute(
             '''
-            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, agency TEXT, nights INTEGER,
-            arrival TEXT, departure TEXT)
+            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, building TEXT, room TEXT, 
+            arrival DATE, departure DATE, nights INTEGER, agency TEXT, agency_fee REAL, 
+            night_fare REAL, extras REAL, total_price REAL, payed REAL, balance REAL)
             '''
         )
         db.commit()
-
+        
     app = PagesContainerApp()    
     app.title('Artesia Host Manager')
 
-    home = app.new_page("Home")
-    insert_app = InsertPageApp(cursor, parent=app.new_page("New customer"))
+    home = app.addTab("Home")
+    insert_app = InsertPageApp(cursor, app.addTab("New customer"))
+    customers_app = CustomersPageApp(cursor, app.addTab("View customers"))
     db.commit()
     
     app.mainloop()    
+    db.commit()
 
+    cursor.execute('''SELECT * FROM customers''')
+    all_customers = cursor.fetchall()
 
-cursor.execute('''SELECT fullname, arrival, departure, agency, nights FROM customers''')
-all_customers = cursor.fetchall()
-
-for customer in all_customers:
-    print(customer)
+    for customer in all_customers:
+        print(customer)
                            
