@@ -15,20 +15,24 @@ def is_number(s):
         float(s)
         return True
     except ValueError:
-        return False
-
+        return False    
+    
 class ViewPageEntry():
-    def __init__(self, parent, column=0, row=0, label=""):
+    def __init__(self, parent, column=0, row=0, label="", function=None, **kwargs):
         self.parent = parent
         self.column = int(column)
         self.row = int(row)
         self.label = label
+        self.function = function
         
         self.tk_label_str = tkinter.StringVar()
         self.tk_label = tkinter.ttk.Label(self.parent, textvariable=self.tk_label_str, style="HM.TLabel")
 
         self.tk_var = tkinter.StringVar()
         self.tk_widget = tkinter.ttk.Entry(self.parent, textvariable=self.tk_var, font='TkDefaultFont 11', style="HMDefault.TEntry")
+
+        for option, value in kwargs.items():
+            self.tk_widget[option] = value
 
 class CustomersPageApp():
     def __init__(self, db_cursor, parent=None):
@@ -67,44 +71,51 @@ class CustomersPageApp():
              ("payed",
               ViewPageEntry(self.parent, column=12, label="Payed:")),
              ("balance",
-              ViewPageEntry(self.parent, column=13, label="Balance:"))
+              ViewPageEntry(self.parent, column=13, label="Balance:")),
+             ("iva",
+              ViewPageEntry(self.parent, column=14, label="IVA (22%):", function=self.computeIVA)),
             ]
         )
         self.customers_widget_list = []
 
         ###---global static page widget
         ###---analyzed period begin
-        self.period_begin_label_str = tkinter.StringVar()        
+        self.period_begin_label_str = tkinter.StringVar()
         self.period_begin_label = tkinter.ttk.Label(self.parent, textvariable=self.period_begin_label_str, style="HM.TLabel")
         self.period_begin_label.grid(row=0, column=0, columnspan=2)
         self.period_begin_label_str.set("Period begin:")
         self.period_begin_var = tkinter.StringVar()
+        self.period_begin_default = "01/01/%Y"
         self.period_begin = tkinter.ttk.Entry(self.parent, textvariable=self.period_begin_var,
                                               font='TkDefaultFont 11', style="HMDefault.TEntry")
         self.period_begin.grid(row=0, column=2)
-        self.period_begin_var.set(time.strftime("01/01/%Y"))
+        self.period_begin_var.set(time.strftime(self.period_begin_default))
         self.period_begin.bind("<Button-1>", self.clickCallback)
         self.period_begin.bind("<Tab>", self.tabCallback)
-#        self.period_begin.bind("<Key>", self.dateCallback)
+        self.period_begin.bind("<Key>", self.dateCallback)
         ###---analyzed period end
         self.period_end_label_str = tkinter.StringVar()        
         self.period_end_label = tkinter.ttk.Label(self.parent, textvariable=self.period_end_label_str, style="HM.TLabel")
         self.period_end_label.grid(row=0, column=3, columnspan=2)
         self.period_end_label_str.set("Period end:")
         self.period_end_var = tkinter.StringVar()
+        self.period_end_default = "01/01/%Y"
         self.period_end = tkinter.ttk.Entry(self.parent, textvariable=self.period_end_var,
                                               font='TkDefaultFont 11', style="HMDefault.TEntry")
         self.period_end.grid(row=0, column=5)
-        self.period_end_var.set(time.strftime("%d/%m/%Y"))
+        self.period_end_var.set(time.strftime(self.period_end_default))
         self.period_end.bind("<Button-1>", self.clickCallback)
         self.period_end.bind("<Tab>", self.tabCallback)
-#        self.period_end.bind("<Key>", self.dateCallback)
+        self.period_end.bind("<Key>", self.dateCallback)
         ###---show button
         self.show_data_button = tkinter.ttk.Button(self.parent, text="Show_Data")
-        self.show_data_button.grid(row=0, column=7)
+        self.show_data_button.grid(row=0, column=7, columnspan=2)
         self.show_data_button.bind("<Button-1>", self.refreshData)
         self.show_data_button.bind("<Return>", self.refreshData)
 
+        ###---srollbars
+        self.xscroll = tkinter.ttk.Scrollbar(self.parent)
+        
         self.initializeViewPage(shift=1)
 
     def initializeViewPage(self, shift):
@@ -133,6 +144,11 @@ class CustomersPageApp():
         # for row in range(0, self.parent.grid_size()[1]):
         #     self.parent.rowconfigure(row, weight=1)
 
+    def computeIVA(self):
+        index = (int(self.widget_view_page['total_price'].column) + len(list(self.widget_view_page.items()))*
+                 int(len(self.customers_widget_list)/len(list(self.widget_view_page.items()))-1))
+        return float(self.customers_widget_list[index].tk_var.get())*0.22
+        
     def refreshData(self, event):
         next_row = self.data_next_row
         
@@ -157,15 +173,27 @@ class CustomersPageApp():
         field_sum = [0 for x in range(0, len(widget_list))]
         for row, customer in enumerate(customers):
             for index, data in enumerate(customer):
-                widget = ViewPageEntry(self.parent, column=widget_list[index][1].column, label=widget_list[index][1].label)
+                widget_width = 47 if is_number(data) else 50
+                widget = ViewPageEntry(self.parent, column=widget_list[index][1].column, width=widget_width,
+                                       label=widget_list[index][1].label)
                 self.customers_widget_list.append(widget)
                 self.customers_widget_list[-1].tk_widget.grid(row=next_row, column=widget.column, sticky="NWE")
                 self.customers_widget_list[-1].tk_widget.config(state = "disabled")
                 self.customers_widget_list[-1].tk_var.set(data)
                 ###---compute sums if applicable
                 field_sum[index] = field_sum[index]+float(data) if is_number(data) else None
+            ###---compute fields that are not stored in the db
+            for field in [widget for name, widget in self.widget_view_page.items() if widget.function != None]:
+                widget = ViewPageEntry(self.parent, column=field.column, label=field.label, function=field.function)
+                self.customers_widget_list.append(widget)                
+                self.customers_widget_list[-1].tk_widget.grid(row=next_row, column=widget.column, sticky="NWE")
+                self.customers_widget_list[-1].tk_widget.config(state = "disabled")
+                self.customers_widget_list[-1].tk_var.set(widget.function())
+                ###---compute sums if applicable
+                field_sum[widget.column] += widget.function()
+
             next_row += 1
-            
+
         ###---display sums
         self.sum_line = tkinter.ttk.Separator(self.parent, orient="horizontal")
         self.sum_line.grid(row=next_row, columnspan=len(widget_list), sticky="EW")
@@ -178,14 +206,22 @@ class CustomersPageApp():
             value = field_sum[index] if field_sum[index] else ""
             value = "Total:" if widget.column == 0 else value
             self.customers_widget_list[-1].tk_var.set(value)
-                
-    def dateCallback(self, event, var):
+
+        next_row += 1
+        self.xscroll.grid_forget()
+        self.xscroll = tkinter.ttk.Scrollbar(self.parent, orient="horizontal")
+        self.xscroll.grid(row = next_row, columnspan=self.parent.grid_size()[0], sticky="EW")
+        self.parent.config(yscrollcommand=self.xscroll.set)
+            
+    def dateCallback(self, event):
         value = event.char
-        entry = self.period_begin_var.get()
+        widget = self.period_begin if event.widget == self.period_begin else self.period_end
+        default_entry = self.period_begin_default if event.widget == self.period_begin else self.period_end_default
+        entry = self.period_begin_var.get() if event.widget == self.period_begin else self.period_end_var.get()
         special_key = event.keysym in ['Left', 'Right', 'BackSpace', 'Delete', 'Cancel']
         if value not in "01233456789/" and not special_key:
             return("break")
-        if not self.widget_insert_page_item[event.widget].isModified():
+        if entry == time.strftime(default_entry):
             event.widget.delete(0, "end")        
             event.widget.config(style="HMInsert.TEntry")
         elif (len(entry) == 2 or len(entry) == 5) and value != '/' and not special_key:
