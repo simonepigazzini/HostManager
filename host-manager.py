@@ -10,7 +10,7 @@ from collections import OrderedDict as odict
 
 from pages_container import *
 from insert_page import *
-from customers_overview import *
+from customers_view import *
 
 if __name__ == "__main__":
 
