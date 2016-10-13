@@ -356,7 +356,10 @@ class InsertPageApp():
         VALUES(:fullname, :building, :room, :arrival, :departure, :nights, :agency,
         :agency_fee, :night_fare, :extras, :total_price, :payed, :balance)
         ''',
-        new_customer)    
+        new_customer)
+        self.dbc.commit()
+
+        self.initializeInsertPage()
 
     def autoResize(self, event):
         for column in range(0, self.parent.grid_size()[0]-1):

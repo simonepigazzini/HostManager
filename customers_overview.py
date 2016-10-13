@@ -121,38 +121,37 @@ class CustomersPageApp():
         ###---field widgets
         self.widget_view_page = odict(
             [("id",
-              ViewPageEntryId(self.interior, column=0, label="ID number:")),
+              {"dummy": ViewPageEntryId(self.interior, column=0, label="ID number:")}),
              ("fullname",
-              ViewPageEntry(self.interior, column=1, label="Full name:")),
+              {"dummy": ViewPageEntry(self.interior, column=1, label="Full name:")}),
              ("building",
-              ViewPageEntry(self.interior, column=2, label="Building:")),
+              {"dummy": ViewPageEntry(self.interior, column=2, label="Building:")}),
              ("room",
-              ViewPageEntry(self.interior, column=3, label="Room:")),
+              {"dummy": ViewPageEntry(self.interior, column=3, label="Room:")}),
              ("arrival",
-              ViewPageEntry(self.interior, column=4, label="Arrival date:")),
+              {"dummy": ViewPageEntry(self.interior, column=4, label="Arrival date:")}),
              ("departure",
-              ViewPageEntry(self.interior, column=5, label="Departure date:")),
+              {"dummy": ViewPageEntry(self.interior, column=5, label="Departure date:")}),
              ("nights",
-              ViewPageEntry(self.interior, column=6, label="Nights:")),
+              {"dummy": ViewPageEntry(self.interior, column=6, label="Nights:")}),
              ("agency",
-              ViewPageEntry(self.interior, column=7, label="Booking agancy:")),
+              {"dummy": ViewPageEntry(self.interior, column=7, label="Booking agancy:")}),
              ("agency_fee",
-              ViewPageEntry(self.interior, column=8, label="Agency fee:")),
+              {"dummy": ViewPageEntry(self.interior, column=8, label="Agency fee:")}),
               ("night_fare",
-              ViewPageEntry(self.interior, column=9, label="Night fare:")),
+               {"dummy": ViewPageEntry(self.interior, column=9, label="Night fare:")}),
              ("extras",
-              ViewPageEntry(self.interior, column=10, label="Extras:")),
+              {"dummy": ViewPageEntry(self.interior, column=10, label="Extras:")}),
              ("total_price",
-              ViewPageEntry(self.interior, column=11, label="Total price:")),
+              {"dummy": ViewPageEntry(self.interior, column=11, label="Total price:")}),
              ("payed",
-              ViewPageEntry(self.interior, column=12, label="Payed:")),
+              {"dummy": ViewPageEntry(self.interior, column=12, label="Payed:")}),
              ("balance",
-              ViewPageEntry(self.interior, column=13, label="Balance:")),
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Balance:")}),
              ("iva",
-              ViewPageEntry(self.interior, column=14, label="IVA (22%):", function=self.computeIVA)),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="IVA (11%):", function=self.computeIVA)}),
             ]
         )
-        self.customers_widget_list = []
         self.disabled_fields = []
 
         self.initializeViewPage(shift=1)
@@ -168,27 +167,29 @@ class CustomersPageApp():
         ###---create database widget
         self.data_next_row = shift+1
         self.placeFieldsLabel(shift=shift)
-
+        for key, widget in self.widget_view_page.items():
+            widget["fields"]=[]
+            
     def placeFieldsLabel(self, shift):
         column = 0
         for key, widget in self.widget_view_page.items():
             if key in self.disabled_fields:
-                widget.tk_label.pack_forget()
-                widget.reloadLabel(parent=self.disabled_fields_frame)
-                widget.tk_label.pack(side="left")
-                widget.tk_label.bind("<Button-1>", self.showField)
+                widget["dummy"].tk_label.pack_forget()
+                widget["dummy"].reloadLabel(parent=self.disabled_fields_frame)
+                widget["dummy"].tk_label.pack(side="left")
+                widget["dummy"].tk_label.bind("<Button-1>", self.showField)
             elif key != "id":
-                widget.tk_label.grid_forget()
-                widget.reloadLabel()
-                widget.tk_label.grid(row=shift, column=column, sticky="NWE")                
-                widget.tk_label.bind("<Button-1>", self.hideField)
+                widget["dummy"].tk_label.grid_forget()
+                widget["dummy"].reloadLabel()
+                widget["dummy"].tk_label.grid(row=shift, column=column, sticky="NWE")                
+                widget["dummy"].tk_label.bind("<Button-1>", self.hideField)
                 column += 1
             else:
-                widget.tk_label.grid(row=shift, column=column, sticky="NWE")
+                widget["dummy"].tk_label.grid(row=shift, column=column, sticky="NWE")
                 column += 1
 
-        self.widget_view_page_item = odict([(item.tk_label, item) for key, item in self.widget_view_page.items()])
-        self.widget_view_page_name = odict([(item.tk_label, key) for key, item in self.widget_view_page.items()])
+        self.widget_view_page_item = odict([(item["dummy"].tk_label, item) for key, item in self.widget_view_page.items()])
+        self.widget_view_page_name = odict([(item["dummy"].tk_label, key) for key, item in self.widget_view_page.items()])
         
     def hideField(self, event):
         event.widget.grid_forget()
@@ -210,9 +211,7 @@ class CustomersPageApp():
             self.parent.columnconfigure(column, weight=1)
 
     def computeIVA(self):
-        index = (int(self.widget_view_page['total_price'].column) + len(list(self.widget_view_page.items()))*
-                 int(len(self.customers_widget_list)/len(list(self.widget_view_page.items()))-1))
-        return float(self.customers_widget_list[index].tk_var.get())*0.22
+        return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())*0.11
         
     def refreshData(self, event):
         next_row = self.data_next_row
@@ -232,35 +231,43 @@ class CustomersPageApp():
     
         ###---create rows for fetched data
         widget_list = list(self.widget_view_page.items())
-        for widget in self.customers_widget_list:
-            widget.tk_widget.grid_remove()
-        self.customers_widget_list = []
+        for key, widget in widget_list:
+            for field in widget["fields"]:
+                field.tk_widget.grid_remove()
+            widget["fields"] = []
         field_sum = [0 for x in range(0, len(widget_list))]
         for row, customer in enumerate(customers):
             next_column = 0
             for index, data in enumerate(customer):
+                widget = ViewPageEntry(self.interior,
+                                       column=widget_list[index][1]["dummy"].column,
+                                       label=widget_list[index][1]["dummy"].label)
+                widget_list[index][1]["fields"].append(widget)
                 if widget_list[index][0] in self.disabled_fields:
-                    continue
-                widget = ViewPageEntry(self.interior, column=widget_list[index][1].column, label=widget_list[index][1].label)
-                self.customers_widget_list.append(widget)
-                self.customers_widget_list[-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
-                self.customers_widget_list[-1].tk_widget.config(state = "disabled")
-                self.customers_widget_list[-1].tk_var.set(data)
+                    widget_list[index][1]["fields"][-1].tk_var.set(data)
+                else:
+                    widget_list[index][1]["fields"][-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
+                    widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
+                    widget_list[index][1]["fields"][-1].tk_var.set(data)
+                    next_column += 1
                 ###---compute sums if applicable
                 field_sum[index] = field_sum[index]+float(data) if is_number(data) else None
-                next_column += 1
+
             ###---compute fields that are not stored in the db
-            for name, field in [(name, widget) for name, widget in self.widget_view_page.items() if widget.function != None]:
-                if name in self.disabled_fields:
-                    continue
+            for name, field in [(name, widgets["dummy"]) for name, widgets in self.widget_view_page.items()
+                                if widgets["dummy"].function != None]:
                 widget = ViewPageEntry(self.interior, column=field.column, label=field.label, function=field.function)
-                self.customers_widget_list.append(widget)                
-                self.customers_widget_list[-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
-                self.customers_widget_list[-1].tk_widget.config(state = "disabled")
-                self.customers_widget_list[-1].tk_var.set(widget.function())
+                widget_list[index][1]["fields"].append(widget)                
+                if name in self.disabled_fields:
+                    widget_list[index][1]["fields"][-1].tk_var.set(widget.function())
+                else:
+                    widget_list[index][1]["fields"][-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
+                    widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
+                    widget_list[index][1]["fields"][-1].tk_var.set(widget.function())
+                    next_column += 1
                 ###---compute sums if applicable
                 field_sum[widget.column] += widget.function()
-                next_column += 1
+                
             next_row += 1
 
         ###---display sums
@@ -272,13 +279,13 @@ class CustomersPageApp():
             for index, field in enumerate(widget_list):
                 if field[0] in self.disabled_fields:
                     continue
-                widget = ViewPageEntry(self.interior, column=field[1].column, label=field[1].label)
-                self.customers_widget_list.append(widget)
-                self.customers_widget_list[-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
-                self.customers_widget_list[-1].tk_widget.config(state = "disabled")
+                widget = ViewPageEntry(self.interior, column=field[1]["dummy"].column, label=field[1]["dummy"].label)
+                widget_list[index][1]["fields"].append(widget)
+                widget_list[index][1]["fields"][-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
+                widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
                 value = field_sum[index] if field_sum[index] else ""
                 value = "Total:" if widget.column == 0 else value
-                self.customers_widget_list[-1].tk_var.set(value)
+                widget_list[index][1]["fields"][-1].tk_var.set(value)
                 next_column += 1
             
     def dateCallback(self, event):
