@@ -200,7 +200,7 @@ class InsertPageApp():
         """
         Validate field: check if field has been filled
         """
-        
+
         field_str = self.widget_insert_page_item[event.widget].tk_var.get()
         if field_str == "" or not self.widget_insert_page_item[event.widget].isModified():
             self.widget_insert_page_item[event.widget].tk_var.set(self.widget_insert_page_item[event.widget].text)
@@ -218,7 +218,7 @@ class InsertPageApp():
         """
 
         if self.widget_insert_page["agency"].tk_var.get() != "None":
-            return self.checkEmptyField(event)
+            return self.checkEmptyField(event=event)
     
     def trimRoomsField(self, *args):
         """
