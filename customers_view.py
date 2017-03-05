@@ -78,7 +78,7 @@ class CustomersPageApp():
         self.period_end_label.pack(side="left", expand=True)
         self.period_end_label_str.set("Period end:")
         self.period_end_var = tkinter.StringVar()
-        self.period_end_default = "01/01/%Y"
+        self.period_end_default = datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%Y")
         self.period_end = tkinter.ttk.Entry(query_frame, textvariable=self.period_end_var,
                                               font='TkDefaultFont 11', style="HMDefault.TEntry")
         self.period_end.pack(side="left", expand=True)
