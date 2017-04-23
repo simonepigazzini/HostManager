@@ -92,6 +92,9 @@ class InsertPageApp():
                                   options=["None", "Booking", "Airbnb", "Homeaway", "Homeholidays", "Expedia"])),
              ("agency_fee",
               InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text="fee (euro)", callback_map=std_entry_callbacks)),
+             ("agent",
+              InsertPageEntryMenu(self.parent, row=3, column=2, label="Agent:",
+                                  options=["None", "Federica (10%)"])),
              ("night_fare",
               InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text="price", callback_map=std_entry_callbacks)),
              ("extras",
@@ -115,7 +118,7 @@ class InsertPageApp():
         self.widget_insert_page["extras"].callback_map["<Key>"] = self.priceCallback
         self.widget_insert_page["total_price"].callback_map["<Key>"] = self.priceCallback
         self.widget_insert_page["payed"].callback_map["<Key>"] = self.priceCallback
-        self.widget_insert_page["agency_fee"].callback_map["<FocusOut>"] = lambda event : self.checkAccounting()
+        #self.widget_insert_page["agency_fee"].callback_map["<FocusOut>"] = lambda event : self.checkAccounting()
         self.widget_insert_page["night_fare"].callback_map["<FocusOut>"] = lambda event : self.checkAccounting()
         self.widget_insert_page["extras"].callback_map["<FocusOut>"] = lambda event : self.checkAccounting()
         self.widget_insert_page["total_price"].callback_map["<FocusOut>"] = lambda event : self.checkAccounting()
@@ -146,6 +149,8 @@ class InsertPageApp():
             for event, call in widget.callback_map.items():
                 widget.tk_widget.bind(event, call)
 
+        if hasattr(self, 'insert_button'):
+            self.insert_button.destroy()
         self.insert_button = tkinter.ttk.Button(self.parent, text="Insert")
         self.insert_button.grid(columnspan=self.parent.grid_size()[0], column=0, row=self.parent.grid_size()[1])
         self.insert_button.bind("<Button-1>", self.tryInsertCustomer)
@@ -352,12 +357,11 @@ class InsertPageApp():
         self.dbc.execute(
         '''
         INSERT INTO Customers(fullname, building, room, arrival, departure, nights, agency, 
-        agency_fee, night_fare, extras, total_price, payed, balance)
+        agency_fee, agent, night_fare, extras, total_price, payed, balance)
         VALUES(:fullname, :building, :room, :arrival, :departure, :nights, :agency,
-        :agency_fee, :night_fare, :extras, :total_price, :payed, :balance)
+        :agency_fee, :agent, :night_fare, :extras, :total_price, :payed, :balance)
         ''',
         new_customer)
-        self.dbc.commit()
 
         self.initializeInsertPage()
 

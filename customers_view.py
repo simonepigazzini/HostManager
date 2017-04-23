@@ -7,6 +7,7 @@ import tkinter
 import datetime
 import time
 
+from PIL import Image, ImageTk
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
@@ -138,18 +139,20 @@ class CustomersPageApp():
               {"dummy": ViewPageEntry(self.interior, column=7, label="Booking agancy:")}),
              ("agency_fee",
               {"dummy": ViewPageEntry(self.interior, column=8, label="Agency fee:")}),
+             ("agent",
+              {"dummy": ViewPageEntry(self.interior, column=9, label="Agent (%):")}),
               ("night_fare",
-               {"dummy": ViewPageEntry(self.interior, column=9, label="Night fare:")}),
+               {"dummy": ViewPageEntry(self.interior, column=10, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=10, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=11, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=11, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=12, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=12, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=13, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Balance:")}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=15, label="IVA (11%):", function=self.computeIVA)}),
             ]
         )
         self.disabled_fields = []
@@ -171,7 +174,7 @@ class CustomersPageApp():
             widget["fields"]=[]
             
     def placeFieldsLabel(self, shift):
-        column = 0
+        column = 3
         for key, widget in self.widget_view_page.items():
             if key in self.disabled_fields:
                 widget["dummy"].tk_label.pack_forget()
@@ -237,7 +240,28 @@ class CustomersPageApp():
             widget["fields"] = []
         field_sum = [0 for x in range(0, len(widget_list))]
         for row, customer in enumerate(customers):
-            next_column = 0
+            ###---delete button
+            delete_icon = Image.open("data/delete_icon.png")
+            delete_icon = delete_icon.resize((16, 16), Image.ANTIALIAS)
+            delete_icon_tk = ImageTk.PhotoImage(delete_icon)
+            delete_button = tkinter.ttk.Button(self.interior, image=delete_icon_tk)
+            delete_button.image = delete_icon_tk
+            delete_button.grid(columnspan=1, rowspan=1, column=0, row=next_row)
+            ###---remove button
+            remove_icon = Image.open("data/remove_icon.png")
+            remove_icon = remove_icon.resize((16, 16), Image.ANTIALIAS)
+            remove_icon_tk = ImageTk.PhotoImage(remove_icon)
+            remove_button = tkinter.ttk.Button(self.interior, image=remove_icon_tk)
+            remove_button.image = remove_icon_tk
+            remove_button.grid(columnspan=1, rowspan=1, column=1, row=next_row)
+            ###---edit button
+            edit_icon = Image.open("data/edit_icon.png")
+            edit_icon = edit_icon.resize((16, 16), Image.ANTIALIAS)
+            edit_icon_tk = ImageTk.PhotoImage(edit_icon)
+            edit_button = tkinter.ttk.Button(self.interior, image=edit_icon_tk)
+            edit_button.image = edit_icon_tk
+            edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
+            next_column = 3
             for index, data in enumerate(customer):
                 widget = ViewPageEntry(self.interior,
                                        column=widget_list[index][1]["dummy"].column,
@@ -275,7 +299,7 @@ class CustomersPageApp():
             self.sum_line = tkinter.ttk.Separator(self.interior, orient="horizontal")
             self.sum_line.grid(row=next_row, columnspan=len(widget_list), sticky="EW")
             next_row += 1
-            next_column = 0
+            next_column = 3
             for index, field in enumerate(widget_list):
                 if field[0] in self.disabled_fields:
                     continue
