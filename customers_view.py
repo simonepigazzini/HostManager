@@ -151,8 +151,14 @@ class CustomersPageApp():
               {"dummy": ViewPageEntry(self.interior, column=13, label="Payed:")}),
              ("balance",
               {"dummy": ViewPageEntry(self.interior, column=14, label="Balance:")}),
+             ("cleaning",
+              {"dummy": ViewPageEntry(self.interior, column=15, label="Cleaning:", function=self.computeCleaning)}),
+             ("mariagrazia",
+              {"dummy": ViewPageEntry(self.interior, column=16, label="Mariagrazia 10%:", function=self.computeMary)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=15, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=17, label="IVA (11%):", function=self.computeIVA)}),
+             ("net_income",
+              {"dummy": ViewPageEntry(self.interior, column=18, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.disabled_fields = []
@@ -213,9 +219,18 @@ class CustomersPageApp():
         for column in range(0, self.parent.grid_size()[0]):
             self.parent.columnconfigure(column, weight=1)
 
+    def computeCleaning(self):
+        return 25.0 if self.widget_view_page["building"]["fields"][-1].tk_var.get() == "Siracusa" else 15.0
+
+    def computeMary(self):
+        return (float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeCleaning()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get()))*0.1
+
     def computeIVA(self):
         return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())*0.11
         
+    def netIncome(self):
+        return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeMary()-self.computeCleaning()-self.computeIVA()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get())
+
     def refreshData(self, event):
         next_row = self.data_next_row
         

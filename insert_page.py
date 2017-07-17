@@ -61,7 +61,7 @@ class InsertPageApp():
         
         ###---data
         self.stay_info = {}
-        self.rooms = {"Villa Maria": ["Double", "Triple", "All"], "Palazzo Iargia" : ["Rosa", "Blu", "Bianca"]}
+        self.rooms = {"Villa Maria": ["Double", "Triple", "All"], "Palazzo Iargia" : ["Rosa", "Blu", "Bianca"], "Siracusa" : ["Monolocale", "Bilocale"]}
         
         ###---objects    
         self.dbc = db_cursor
@@ -74,7 +74,7 @@ class InsertPageApp():
               InsertPageEntry(self.parent, row=0, column=0, label="Full name:", text="Enter customer full name",
                               callback_map=std_entry_callbacks)),
              ("building",
-              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=["Villa Maria", "Palazzo Iargia"])),
+              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=["Villa Maria", "Palazzo Iargia", "Siracusa"])),
              ("room",
               InsertPageEntryMenu(self.parent, row=1, column=1, label="Room:",
                                   options=self.rooms["Villa Maria"])),
