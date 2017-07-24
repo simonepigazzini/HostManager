@@ -3,6 +3,7 @@
 import os
 import tkinter
 import time
+import copy
 import subprocess
 
 from PIL import Image, ImageTk
@@ -23,8 +24,6 @@ class HomePageWidget():
         self.icon_tk = ImageTk.PhotoImage(icon)
         self.button = tkinter.ttk.Button(self.parent, image=self.icon_tk)
         self.button.image = self.icon_tk
-        #widget_button.bind("<Button-1>", lambda event, cid=customer[0], cname=customer[1] :
-         #                  self.widgetCustomer(event, cid = cid, cname = cname))
 
         self.tk_label_str = tkinter.StringVar()
         self.tk_label = tkinter.ttk.Label(self.parent, textvariable=self.tk_label_str, style="HM.TLabel")
@@ -51,53 +50,56 @@ class HomePage():
         ###---Update button (code only)
         self.update_w = HomePageWidget(self.parent, column=0, row=1, label="UPDATE", figure="data/update_icon.png", callback_map={})
         self.update_w.button.grid(columnspan=1, rowspan=1, column=self.update_w.column, row=self.update_w.row)
+        self.update_w.button.bind("<Button-1>", lambda event : self.updateCallback)
         self.update_w.tk_label.grid(row=self.update_w.row+1, column=self.update_w.column, sticky="")
         self.update_w.tk_label_str.set(self.update_w.label)
 
         ###---Download button (code only)
         self.download_w = HomePageWidget(self.parent, column=1, row=1, label="DOWNLOAD", figure="data/download_icon.png", callback_map={})
         self.download_w.button.grid(columnspan=1, rowspan=1, column=self.download_w.column, row=self.download_w.row)
+        self.download_w.button.bind("<Button-1>", lambda event : self.downloadCallback)
         self.download_w.tk_label.grid(row=self.download_w.row+1, column=self.download_w.column, sticky="")
         self.download_w.tk_label_str.set(self.download_w.label)
 
         ###---Upload button (code only)
         self.upload_w = HomePageWidget(self.parent, column=2, row=1, label="UPLOAD", figure="data/upload_icon.png", callback_map={})
         self.upload_w.button.grid(columnspan=1, rowspan=1, column=self.upload_w.column, row=self.upload_w.row)
+        self.upload_w.button.bind("<Button-1>", lambda event : self.uploadCallback)
         self.upload_w.tk_label.grid(row=self.upload_w.row+1, column=self.upload_w.column, sticky="")
         self.upload_w.tk_label_str.set(self.upload_w.label)
 
-    def updateCallback(self)
-    """
-    Download db changes only:
-    1) git fetch origin
-    2) git merge --no-commit --no-ff origin/master
-    3) git reset -- data/customer.db
-    4) git commit
-    """
+    def updateCallback(self):
+        """
+        Download db changes only:
+        1) git fetch origin
+        2) git merge --no-commit --no-ff origin/master
+        3) git reset -- data/customer.db
+        4) git commit
+        """
 
-    subprocess.getoutput('git fetch origin')
-    subprocess.getoutput('git merge --no-commit --no-ff origin/master')
-    subprocess.getoutput('git reset -- data/customer.db')
-    subprocess.getoutput('git commit')
+        subprocess.getoutput('git fetch origin')
+        subprocess.getoutput('git merge --no-commit --no-ff origin/master')
+        subprocess.getoutput('git reset -- data/customer.db')
+        subprocess.getoutput('git commit')
 
-    def downloadCallback(self)
-    """
-    Download db changes only:
-    1) git fetch origin
-    2) git checkout --patch origin/master data/customer.db
-    """
+    def downloadCallback(self):
+        """
+        Download db changes only:
+        1) git fetch origin
+        2) git checkout --patch origin/master data/customer.db
+        """
 
-    subprocess.getoutput('git fetch origin')
-    subprocess.getoutput('git checkout --patch origin/master data/customer.db')
+        subprocess.getoutput('git fetch origin')
+        subprocess.getoutput('git checkout --patch origin/master data/customer.db')
     
-    def updateCallback(self)
-    """
-    Update database only:
-    1) git add data/customer.db
-    2) git commit -m "Uploading db to repo"
-    3) git push origin master
-    """
+    def uploadCallback(self):
+        """
+        Update database only:
+        1) git add data/customer.db
+        2) git commit -m "Uploading db to repo"
+        3) git push origin master
+        """
 
-    subprocess.getoutput('git add data/customer.db')
-    subprocess.getoutput('git commit -m "Uploading db to repo"')
-    subprocess.getoutput('git push origin master')
+        subprocess.getoutput('git add data/customer.db')
+        subprocess.getoutput('git commit -m "Uploading db to repo"')
+        subprocess.getoutput('git push origin master')
