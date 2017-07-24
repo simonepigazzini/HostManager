@@ -8,6 +8,7 @@ import datetime
 import time
 
 from PIL import Image, ImageTk
+from tkinter import messagebox
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
@@ -90,8 +91,8 @@ class CustomersPageApp():
         ###---show button
         self.show_data_button = tkinter.ttk.Button(query_frame, text="Show_Data")
         self.show_data_button.pack(anchor="ne", side="right", expand=False)
-        self.show_data_button.bind("<Button-1>", self.refreshData)
-        self.show_data_button.bind("<Return>", self.refreshData)
+        self.show_data_button.bind("<Button-1>", self.showData)
+        self.show_data_button.bind("<Return>", self.showData)
         
         ###---create scrollable frame
         self.xscroll = tkinter.ttk.Scrollbar(self.parent, orient="horizontal")
@@ -161,6 +162,7 @@ class CustomersPageApp():
               {"dummy": ViewPageEntry(self.interior, column=18, label="Net income:", function=self.netIncome)}),
             ]
         )
+        self.forgotten_customers = []
         self.disabled_fields = []
 
         self.initializeViewPage(shift=1)
@@ -231,8 +233,44 @@ class CustomersPageApp():
     def netIncome(self):
         return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeMary()-self.computeCleaning()-self.computeIVA()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get())
 
+    def deleteCustomer(self, event, cid=0, cname=""):
+        """
+        Delete customer from the db
+        """
+
+        if tkinter.messagebox.askokcancel("Please confirm", "Are you sure to delete customer %s?"%cname, parent=self.parent):
+            self.db_cursor.execute('''DELETE FROM customers WHERE id = ?''', [cid])
+
+        self.refreshData(event)
+            
+        
+    def removeCustomer(self, event, customer_row=0):
+        """
+        Remove customer from current view, resetted by "Show Data"
+        """
+
+        self.forgotten_customers.append(customer_row)
+        self.refreshData(event)
+
+    def editCustomer(self, event):
+        return
+        
+    def showData(self, event):
+        """
+        Call refresh data after resetting session
+        """
+
+        self.forgotten_customers = []
+        self.refreshData(event)
+        
     def refreshData(self, event):
         next_row = self.data_next_row
+        
+        old_rows = []
+        for irow in range(next_row, self.interior.grid_size()[1]):
+            for srow in self.interior.grid_slaves(row=int(irow)):
+                srow.grid_forget()
+                srow.pack_forget()
         
         ###---fetch data
         if len(self.period_begin_var.get()) == 8:
@@ -244,7 +282,7 @@ class CustomersPageApp():
         elif len(self.period_end_var.get()) == 10:
             end = datetime.datetime.strptime(self.period_end_var.get(), '%d/%m/%Y')
             
-        self.db_cursor.execute('''SELECT * FROM customers WHERE arrival > ? AND departure < ?''', [begin, end])
+        self.db_cursor.execute('''SELECT * FROM customers WHERE arrival > ? AND departure < ? ORDER BY arrival ASC ''', [begin, end])
         customers = self.db_cursor.fetchall()
     
         ###---create rows for fetched data
@@ -255,27 +293,37 @@ class CustomersPageApp():
             widget["fields"] = []
         field_sum = [0 for x in range(0, len(widget_list))]
         for row, customer in enumerate(customers):
+            ###---skip removed customers
+            if row in self.forgotten_customers:
+                continue
+            
             ###---delete button
             delete_icon = Image.open("data/delete_icon.png")
             delete_icon = delete_icon.resize((16, 16), Image.ANTIALIAS)
-            delete_icon_tk = ImageTk.PhotoImage(delete_icon)
-            delete_button = tkinter.ttk.Button(self.interior, image=delete_icon_tk)
-            delete_button.image = delete_icon_tk
+            self.delete_icon_tk = ImageTk.PhotoImage(delete_icon)
+            delete_button = tkinter.ttk.Button(self.interior, image=self.delete_icon_tk)
+            delete_button.image = self.delete_icon_tk
             delete_button.grid(columnspan=1, rowspan=1, column=0, row=next_row)
+            delete_button.bind("<Button-1>", lambda event, cid=customer[0], cname=customer[1] :
+                               self.deleteCustomer(event, cid = cid, cname = cname))
             ###---remove button
             remove_icon = Image.open("data/remove_icon.png")
             remove_icon = remove_icon.resize((16, 16), Image.ANTIALIAS)
-            remove_icon_tk = ImageTk.PhotoImage(remove_icon)
-            remove_button = tkinter.ttk.Button(self.interior, image=remove_icon_tk)
-            remove_button.image = remove_icon_tk
+            self.remove_icon_tk = ImageTk.PhotoImage(remove_icon)
+            remove_button = tkinter.ttk.Button(self.interior, image=self.remove_icon_tk)
+            remove_button.image = self.remove_icon_tk
             remove_button.grid(columnspan=1, rowspan=1, column=1, row=next_row)
+            remove_button.bind("<Button-1>", lambda event, row=row : self.removeCustomer(event, customer_row = row))
             ###---edit button
             edit_icon = Image.open("data/edit_icon.png")
             edit_icon = edit_icon.resize((16, 16), Image.ANTIALIAS)
-            edit_icon_tk = ImageTk.PhotoImage(edit_icon)
-            edit_button = tkinter.ttk.Button(self.interior, image=edit_icon_tk)
-            edit_button.image = edit_icon_tk
+            self.edit_icon_tk = ImageTk.PhotoImage(edit_icon)
+            edit_button = tkinter.ttk.Button(self.interior, image=self.edit_icon_tk)
+            edit_button.image = self.edit_icon_tk
             edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
+            edit_button.bind("<Button-1>", self.editCustomer)
+            
+            ###---data fields
             next_column = 3
             for index, data in enumerate(customer):
                 widget = ViewPageEntry(self.interior,

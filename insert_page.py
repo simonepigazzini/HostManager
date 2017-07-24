@@ -94,7 +94,7 @@ class InsertPageApp():
               InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text="fee (euro)", callback_map=std_entry_callbacks)),
              ("agent",
               InsertPageEntryMenu(self.parent, row=3, column=2, label="Agent:",
-                                  options=["None", "Federica (10%)"])),
+                                  options=["None"])),
              ("night_fare",
               InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text="price", callback_map=std_entry_callbacks)),
              ("extras",
@@ -308,7 +308,7 @@ class InsertPageApp():
                 total_widget.tk_var.set(float(fare_widget.tk_var.get())*int(nights_widget.tk_var.get())
                                         + float(extras_widget.tk_var.get()))
             elif not fare_widget.isModified() and total_widget.isModified():
-                fare_widget.tk_var.set(float(total_widget.tk_var.get()) - float(extras_widget.tk_var.get())
+                fare_widget.tk_var.set((float(total_widget.tk_var.get()) - float(extras_widget.tk_var.get()))
                                        / int(nights_widget.tk_var.get()))
             elif not fare_widget.isModified() and not total_widget.isModified():
                 return [fare_widget, total_widget]

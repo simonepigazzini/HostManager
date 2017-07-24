@@ -11,6 +11,7 @@ from collections import OrderedDict as odict
 from pages_container import *
 from insert_page import *
 from customers_view import *
+from home_page import *
 
 if __name__ == "__main__":
 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
     app = PagesContainerApp()    
     app.title('Artesia Host Manager')
 
-    home = app.addTab("Home")
+    home_app = HomePage(app.addTab("Home"))
     insert_app = InsertPageApp(cursor, app.addTab("New customer"))
     customers_app = CustomersPageApp(cursor, app.addTab("View customers"))
     db.commit()
