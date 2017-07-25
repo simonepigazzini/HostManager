@@ -48,25 +48,25 @@ class HomePage():
         ###---Update button (code only)
         self.update_w = HomePageWidget(self.parent, column=0, row=1, label="UPDATE", figure="data/img/update_icon.png")
         self.update_w.button.grid(columnspan=1, rowspan=1, column=self.update_w.column, row=self.update_w.row)
-        self.update_w.button.bind("<Button-1>", lambda event : self.updateCallback)
+        self.update_w.button.bind("<Button-1>", self.updateCallback)
         self.update_w.tk_label.grid(row=self.update_w.row+1, column=self.update_w.column, sticky="")
         self.update_w.tk_label_str.set(self.update_w.label)
 
         ###---Download button (code only)
         self.download_w = HomePageWidget(self.parent, column=1, row=1, label="DOWNLOAD", figure="data/img/download_icon.png")
         self.download_w.button.grid(columnspan=1, rowspan=1, column=self.download_w.column, row=self.download_w.row)
-        self.download_w.button.bind("<Button-1>", lambda event : self.downloadCallback)
+        self.download_w.button.bind("<Button-1>", self.downloadCallback)
         self.download_w.tk_label.grid(row=self.download_w.row+1, column=self.download_w.column, sticky="")
         self.download_w.tk_label_str.set(self.download_w.label)
 
         ###---Upload button (code only)
         self.upload_w = HomePageWidget(self.parent, column=2, row=1, label="UPLOAD", figure="data/img/upload_icon.png")
         self.upload_w.button.grid(columnspan=1, rowspan=1, column=self.upload_w.column, row=self.upload_w.row)
-        self.upload_w.button.bind("<Button-1>", lambda event : self.uploadCallback)
+        self.upload_w.button.bind("<Button-1>", self.uploadCallback)
         self.upload_w.tk_label.grid(row=self.upload_w.row+1, column=self.upload_w.column, sticky="")
         self.upload_w.tk_label_str.set(self.upload_w.label)
 
-    def updateCallback(self):
+    def updateCallback(self, event):
         """
         Download db changes only:
         1) git fetch origin
@@ -80,7 +80,9 @@ class HomePage():
         subprocess.getoutput('git reset -- data/db/customer.db')
         subprocess.getoutput('git commit')
 
-    def downloadCallback(self):
+        return("break")
+        
+    def downloadCallback(self, event):
         """
         Download db changes only:
         1) git fetch origin
@@ -89,8 +91,10 @@ class HomePage():
 
         subprocess.getoutput('git fetch origin')
         subprocess.getoutput('git checkout --patch origin/master data/db/customer.db')
+
+        return("break")
     
-    def uploadCallback(self):
+    def uploadCallback(self, event):
         """
         Update database only:
         1) git add data/db/customer.db
@@ -98,7 +102,8 @@ class HomePage():
         3) git push origin master
         """
 
-        print("hola")
         subprocess.getoutput('git add data/db/customer.db')
         subprocess.getoutput('git commit -m "Uploading db to repo"')
         subprocess.getoutput('git push origin master')
+
+        return("break")
