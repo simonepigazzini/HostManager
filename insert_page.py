@@ -94,7 +94,7 @@ class InsertPageApp():
               InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text="fee (euro)", callback_map=std_entry_callbacks)),
              ("agent",
               InsertPageEntryMenu(self.parent, row=3, column=2, label="Agent:",
-                                  options=["None"])),
+                                  options=["None", "Mariagrazia", "Salvo"])),
              ("night_fare",
               InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text="price", callback_map=std_entry_callbacks)),
              ("extras",
@@ -344,6 +344,8 @@ class InsertPageApp():
             
     def insertCustomer(self):        
         new_customer = {key: widget.tk_var.get() for key, widget in self.widget_insert_page.items()}
+        ###---fix value for cleanings (Mariagrazia)
+        new_customer["cleanings"] = "Mariagrazia"
         ###---convert dates string into datetime objects
         if len(new_customer['arrival']) == 8:
             new_customer['arrival'] = datetime.datetime.strptime(new_customer['arrival'], '%d/%m/%y').date()
@@ -357,9 +359,9 @@ class InsertPageApp():
         self.dbc.execute(
         '''
         INSERT INTO Customers(fullname, building, room, arrival, departure, nights, agency, 
-        agency_fee, agent, night_fare, extras, total_price, payed, balance)
+        agency_fee, agent, cleanings, night_fare, extras, total_price, payed, balance)
         VALUES(:fullname, :building, :room, :arrival, :departure, :nights, :agency,
-        :agency_fee, :agent, :night_fare, :extras, :total_price, :payed, :balance)
+        :agency_fee, :agent, :cleanings, :night_fare, :extras, :total_price, :payed, :balance)
         ''',
         new_customer)
 

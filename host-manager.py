@@ -15,7 +15,7 @@ from home_page import *
 
 if __name__ == "__main__":
 
-    db = sqlite3.connect('data/customer.db')
+    db = sqlite3.connect('data/db/customer.db')
     cursor = db.cursor()
     
     cursor.execute(
@@ -28,7 +28,7 @@ if __name__ == "__main__":
             '''
             CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, building TEXT, room TEXT, 
             arrival DATE, departure DATE, nights INTEGER, agency TEXT, agency_fee REAL, agent TEXT,
-            night_fare REAL, extras REAL, total_price REAL, payed REAL, balance REAL)
+            cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, payed REAL, balance REAL)
             '''
         )
         db.commit()

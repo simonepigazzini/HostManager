@@ -3,7 +3,6 @@
 import os
 import tkinter
 import time
-import copy
 import subprocess
 
 from PIL import Image, ImageTk
@@ -11,13 +10,12 @@ from tkinter import messagebox
 from tkinter.ttk import *
 
 class HomePageWidget():
-    def __init__(self, parent, column=0, row=0, label="", figure="", callback_map={}):
+    def __init__(self, parent, column=0, row=0, label="", figure=""):
         self.parent = parent
         self.column = int(column)
         self.row = int(row)
         self.label = label
         self.figure = figure
-        self.callback_map = copy.copy(callback_map)
 
         icon = Image.open(self.figure)
         icon = icon.resize((128, 128), Image.ANTIALIAS)
@@ -48,21 +46,21 @@ class HomePage():
         self.parent.grid_rowconfigure(3, weight=1)
 
         ###---Update button (code only)
-        self.update_w = HomePageWidget(self.parent, column=0, row=1, label="UPDATE", figure="data/update_icon.png", callback_map={})
+        self.update_w = HomePageWidget(self.parent, column=0, row=1, label="UPDATE", figure="data/img/update_icon.png")
         self.update_w.button.grid(columnspan=1, rowspan=1, column=self.update_w.column, row=self.update_w.row)
         self.update_w.button.bind("<Button-1>", lambda event : self.updateCallback)
         self.update_w.tk_label.grid(row=self.update_w.row+1, column=self.update_w.column, sticky="")
         self.update_w.tk_label_str.set(self.update_w.label)
 
         ###---Download button (code only)
-        self.download_w = HomePageWidget(self.parent, column=1, row=1, label="DOWNLOAD", figure="data/download_icon.png", callback_map={})
+        self.download_w = HomePageWidget(self.parent, column=1, row=1, label="DOWNLOAD", figure="data/img/download_icon.png")
         self.download_w.button.grid(columnspan=1, rowspan=1, column=self.download_w.column, row=self.download_w.row)
         self.download_w.button.bind("<Button-1>", lambda event : self.downloadCallback)
         self.download_w.tk_label.grid(row=self.download_w.row+1, column=self.download_w.column, sticky="")
         self.download_w.tk_label_str.set(self.download_w.label)
 
         ###---Upload button (code only)
-        self.upload_w = HomePageWidget(self.parent, column=2, row=1, label="UPLOAD", figure="data/upload_icon.png", callback_map={})
+        self.upload_w = HomePageWidget(self.parent, column=2, row=1, label="UPLOAD", figure="data/img/upload_icon.png")
         self.upload_w.button.grid(columnspan=1, rowspan=1, column=self.upload_w.column, row=self.upload_w.row)
         self.upload_w.button.bind("<Button-1>", lambda event : self.uploadCallback)
         self.upload_w.tk_label.grid(row=self.upload_w.row+1, column=self.upload_w.column, sticky="")
@@ -100,6 +98,7 @@ class HomePage():
         3) git push origin master
         """
 
+        print("hola")
         subprocess.getoutput('git add data/customer.db')
         subprocess.getoutput('git commit -m "Uploading db to repo"')
         subprocess.getoutput('git push origin master')

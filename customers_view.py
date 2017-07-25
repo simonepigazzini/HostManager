@@ -110,6 +110,15 @@ class CustomersPageApp():
         ###---query frame separator
         query_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
         query_separetor.pack(side="bottom", fill="x")
+
+        ###---filters frame
+        self.filters_frame = tkinter.ttk.Frame(self.parent)
+        self.filters_frame.pack(side="bottom", anchor="nw", fill="x")
+        self.filters_label = tkinter.ttk.Label(self.filters_frame, text="Filters: ",
+                                                  width=len("Filters: ")+3, style="HM.TLabel")
+        self.filters_label.pack(anchor="nw")
+        filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
+        filters_separetor.pack(side="bottom", fill="x")        
         
         ###---disabled field list
         self.disabled_fields_frame = tkinter.ttk.Frame(self.parent)
@@ -141,25 +150,27 @@ class CustomersPageApp():
              ("agency_fee",
               {"dummy": ViewPageEntry(self.interior, column=8, label="Agency fee:")}),
              ("agent",
-              {"dummy": ViewPageEntry(self.interior, column=9, label="Agent (%):")}),
-              ("night_fare",
-               {"dummy": ViewPageEntry(self.interior, column=10, label="Night fare:")}),
+              {"dummy": ViewPageEntry(self.interior, column=9, label="Agent:")}),
+             ("cleanings",
+              {"dummy": ViewPageEntry(self.interior, column=10, label="Cleaner:")}),
+             ("night_fare",
+               {"dummy": ViewPageEntry(self.interior, column=11, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=11, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=12, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=12, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=13, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=15, label="Balance:")}),
              ("cleaning",
-              {"dummy": ViewPageEntry(self.interior, column=15, label="Cleaning:", function=self.computeCleaning)}),
-             ("mariagrazia",
-              {"dummy": ViewPageEntry(self.interior, column=16, label="Mariagrazia 10%:", function=self.computeMary)}),
+              {"dummy": ViewPageEntry(self.interior, column=16, label="Cleaning:", function=self.computeCleaning)}),
+             ("agent_fee",
+              {"dummy": ViewPageEntry(self.interior, column=17, label="Agent 10%:", function=self.computeAgent)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=17, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=18, label="IVA (11%):", function=self.computeIVA)}),
              ("net_income",
-              {"dummy": ViewPageEntry(self.interior, column=18, label="Net income:", function=self.netIncome)}),
+              {"dummy": ViewPageEntry(self.interior, column=19, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.forgotten_customers = []
@@ -224,14 +235,14 @@ class CustomersPageApp():
     def computeCleaning(self):
         return 25.0 if self.widget_view_page["building"]["fields"][-1].tk_var.get() == "Siracusa" else 15.0
 
-    def computeMary(self):
+    def computeAgent(self):
         return (float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeCleaning()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get()))*0.1
 
     def computeIVA(self):
         return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())*0.11
         
     def netIncome(self):
-        return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeMary()-self.computeCleaning()-self.computeIVA()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get())
+        return float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeAgent()-self.computeCleaning()-self.computeIVA()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get())
 
     def deleteCustomer(self, event, cid=0, cname=""):
         """
@@ -298,7 +309,7 @@ class CustomersPageApp():
                 continue
             
             ###---delete button
-            delete_icon = Image.open("data/delete_icon.png")
+            delete_icon = Image.open("data/img/delete_icon.png")
             delete_icon = delete_icon.resize((16, 16), Image.ANTIALIAS)
             self.delete_icon_tk = ImageTk.PhotoImage(delete_icon)
             delete_button = tkinter.ttk.Button(self.interior, image=self.delete_icon_tk)
@@ -307,7 +318,7 @@ class CustomersPageApp():
             delete_button.bind("<Button-1>", lambda event, cid=customer[0], cname=customer[1] :
                                self.deleteCustomer(event, cid = cid, cname = cname))
             ###---remove button
-            remove_icon = Image.open("data/remove_icon.png")
+            remove_icon = Image.open("data/img/remove_icon.png")
             remove_icon = remove_icon.resize((16, 16), Image.ANTIALIAS)
             self.remove_icon_tk = ImageTk.PhotoImage(remove_icon)
             remove_button = tkinter.ttk.Button(self.interior, image=self.remove_icon_tk)
@@ -315,7 +326,7 @@ class CustomersPageApp():
             remove_button.grid(columnspan=1, rowspan=1, column=1, row=next_row)
             remove_button.bind("<Button-1>", lambda event, row=row : self.removeCustomer(event, customer_row = row))
             ###---edit button
-            edit_icon = Image.open("data/edit_icon.png")
+            edit_icon = Image.open("data/img/edit_icon.png")
             edit_icon = edit_icon.resize((16, 16), Image.ANTIALIAS)
             self.edit_icon_tk = ImageTk.PhotoImage(edit_icon)
             edit_button = tkinter.ttk.Button(self.interior, image=self.edit_icon_tk)
