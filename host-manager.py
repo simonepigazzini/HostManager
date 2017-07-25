@@ -26,7 +26,7 @@ if __name__ == "__main__":
     if not cursor.fetchone():
         cursor.execute(
             '''
-            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, building TEXT, room TEXT, 
+            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, phone TEXT, building TEXT, room TEXT, 
             arrival DATE, departure DATE, nights INTEGER, agency TEXT, agency_fee REAL, agent TEXT,
             cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, payed REAL, balance REAL)
             '''

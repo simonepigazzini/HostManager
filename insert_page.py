@@ -10,6 +10,8 @@ from tkinter import messagebox
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
+import common
+
 class InsertPageWidget():
     def __init__(self, parent, column=0, row=0, label="", text="", callback_map={}):
         self.parent = parent
@@ -61,7 +63,7 @@ class InsertPageApp():
         
         ###---data
         self.stay_info = {}
-        self.rooms = {"Villa Maria": ["Double", "Triple", "All"], "Palazzo Iargia" : ["Rosa", "Blu", "Bianca"], "Siracusa" : ["Monolocale", "Bilocale"]}
+        self.rooms = common.rooms_bld_map
         
         ###---objects    
         self.dbc = db_cursor
@@ -73,8 +75,11 @@ class InsertPageApp():
             [("fullname",
               InsertPageEntry(self.parent, row=0, column=0, label="Full name:", text="Enter customer full name",
                               callback_map=std_entry_callbacks)),
+             ("phone",
+              InsertPageEntry(self.parent, row=0, column=1, label="Phone number:", text="+XX-##########",
+                              callback_map=std_entry_callbacks)),
              ("building",
-              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=["Villa Maria", "Palazzo Iargia", "Siracusa"])),
+              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=common.buildings)),
              ("room",
               InsertPageEntryMenu(self.parent, row=1, column=1, label="Room:",
                                   options=self.rooms["Villa Maria"])),
@@ -94,7 +99,7 @@ class InsertPageApp():
               InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text="fee (euro)", callback_map=std_entry_callbacks)),
              ("agent",
               InsertPageEntryMenu(self.parent, row=3, column=2, label="Agent:",
-                                  options=["None", "Mariagrazia", "Salvo"])),
+                                  options=common.agents)),
              ("night_fare",
               InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text="price", callback_map=std_entry_callbacks)),
              ("extras",
@@ -108,6 +113,7 @@ class InsertPageApp():
             ]
         )
         self.widget_insert_page["fullname"].callback_map["<FocusOut>"] = self.checkEmptyField
+        self.widget_insert_page["phone"].callback_map["<FocusOut>"] = self.checkPhoneNumber
         self.widget_insert_page["arrival"].callback_map["<FocusOut>"] = self.validateDate
         self.widget_insert_page["arrival"].callback_map["<Key>"] = self.dateCallback
         self.widget_insert_page["departure"].callback_map["<FocusOut>"] = self.validateDate
@@ -216,7 +222,7 @@ class InsertPageApp():
             self.widget_insert_page_item[event.widget].is_good_flag = True
             
         return("break")
-
+    
     def checkFeeValidity(self, event):
         """
         like checkEmptyField but allow empty field if <agency> field is None
@@ -225,6 +231,22 @@ class InsertPageApp():
         if self.widget_insert_page["agency"].tk_var.get() != "None":
             return self.checkEmptyField(event=event)
     
+    def checkPhoneNumber(self, event):
+        """
+        Check phone number: force +X(X)-########## format
+        """
+
+        phone_pattern = re.compile('\+[0-9]{1,2}-[0-9]{9,10}')
+        field_str = self.widget_insert_page_item[event.widget].tk_var.get()
+        if not self.widget_insert_page_item[event.widget].isModified() or phone_pattern.match(field_str):
+            self.widget_insert_page_item[event.widget].tk_label.config(style="HM.TLabel")
+            self.widget_insert_page_item[event.widget].is_good_flag = True
+        else:
+            self.widget_insert_page_item[event.widget].tk_label.config(style="HMError.TLabel")
+            self.widget_insert_page_item[event.widget].is_good_flag = False
+
+        return("break")
+
     def trimRoomsField(self, *args):
         """
         Trim room selection based on chosen building:
@@ -358,9 +380,9 @@ class InsertPageApp():
             
         self.dbc.execute(
         '''
-        INSERT INTO Customers(fullname, building, room, arrival, departure, nights, agency, 
+        INSERT INTO Customers(fullname, phone, building, room, arrival, departure, nights, agency, 
         agency_fee, agent, cleanings, night_fare, extras, total_price, payed, balance)
-        VALUES(:fullname, :building, :room, :arrival, :departure, :nights, :agency,
+        VALUES(:fullname, :phone, :building, :room, :arrival, :departure, :nights, :agency,
         :agency_fee, :agent, :cleanings, :night_fare, :extras, :total_price, :payed, :balance)
         ''',
         new_customer)

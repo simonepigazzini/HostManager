@@ -71,34 +71,34 @@ class HomePage():
         Download db changes only:
         1) git fetch origin
         2) git merge --no-commit --no-ff origin/master
-        3) git reset -- data/customer.db
+        3) git reset -- data/db/customer.db
         4) git commit
         """
 
         subprocess.getoutput('git fetch origin')
         subprocess.getoutput('git merge --no-commit --no-ff origin/master')
-        subprocess.getoutput('git reset -- data/customer.db')
+        subprocess.getoutput('git reset -- data/db/customer.db')
         subprocess.getoutput('git commit')
 
     def downloadCallback(self):
         """
         Download db changes only:
         1) git fetch origin
-        2) git checkout --patch origin/master data/customer.db
+        2) git checkout --patch origin/master data/db/customer.db
         """
 
         subprocess.getoutput('git fetch origin')
-        subprocess.getoutput('git checkout --patch origin/master data/customer.db')
+        subprocess.getoutput('git checkout --patch origin/master data/db/customer.db')
     
     def uploadCallback(self):
         """
         Update database only:
-        1) git add data/customer.db
+        1) git add data/db/customer.db
         2) git commit -m "Uploading db to repo"
         3) git push origin master
         """
 
         print("hola")
-        subprocess.getoutput('git add data/customer.db')
+        subprocess.getoutput('git add data/db/customer.db')
         subprocess.getoutput('git commit -m "Uploading db to repo"')
         subprocess.getoutput('git push origin master')

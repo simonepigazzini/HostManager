@@ -12,6 +12,8 @@ from tkinter import messagebox
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
+import common
+
 def is_number(s):
     try:
         float(s)
@@ -112,13 +114,38 @@ class CustomersPageApp():
         query_separetor.pack(side="bottom", fill="x")
 
         ###---filters frame
+        tkinter.ttk.Style().configure("HMDefault.TMenubutton", background="white", borderwidth=2, relief="flat")
         self.filters_frame = tkinter.ttk.Frame(self.parent)
         self.filters_frame.pack(side="bottom", anchor="nw", fill="x")
         self.filters_label = tkinter.ttk.Label(self.filters_frame, text="Filters: ",
                                                   width=len("Filters: ")+3, style="HM.TLabel")
         self.filters_label.pack(anchor="nw")
+        self.bld_var = tkinter.StringVar()
+        self.bld_options = ["All buildings"] + common.buildings
+        self.bld_filter = tkinter.ttk.OptionMenu(self.filters_frame, self.bld_var,
+                                                 self.bld_options[0],
+                                                 *self.bld_options,
+                                                 style="HMDefault.TMenubutton")
+        #self.bld_var.trace('w', self.trimRoomsField)
+        self.bld_filter.pack(side="left", fill="x")
+        #---room filter
+        # self.room_var = tkinter.StringVar()
+        # self.rooms_options = []
+        # self.room_filter = tkinter.ttk.OptionMenu(self.filters_frame, self.room_var,
+        #                                           "Select a building", *self.rooms_options, style="HMDefault.TMenubutton")
+        # self.room_filter.pack(side="left", fill="x")
+        #---agent filter
+        self.agent_var = tkinter.StringVar()
+        self.agent_options = ["All agents"] + common.agents
+        self.agent_filter = tkinter.ttk.OptionMenu(self.filters_frame, self.agent_var,
+                                                 self.agent_options[0],
+                                                 *self.agent_options,
+                                                 style="HMDefault.TMenubutton")
+        self.agent_filter.pack(side="left", fill="x")
+        #---end of filter frame
         filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
         filters_separetor.pack(side="bottom", fill="x")        
+
         
         ###---disabled field list
         self.disabled_fields_frame = tkinter.ttk.Frame(self.parent)
@@ -135,42 +162,44 @@ class CustomersPageApp():
               {"dummy": ViewPageEntryId(self.interior, column=0, label="ID number:")}),
              ("fullname",
               {"dummy": ViewPageEntry(self.interior, column=1, label="Full name:")}),
+             ("phone",
+              {"dummy": ViewPageEntry(self.interior, column=2, label="Phone:")}),
              ("building",
-              {"dummy": ViewPageEntry(self.interior, column=2, label="Building:")}),
+              {"dummy": ViewPageEntry(self.interior, column=3, label="Building:")}),
              ("room",
-              {"dummy": ViewPageEntry(self.interior, column=3, label="Room:")}),
+              {"dummy": ViewPageEntry(self.interior, column=4, label="Room:")}),
              ("arrival",
-              {"dummy": ViewPageEntry(self.interior, column=4, label="Arrival date:")}),
+              {"dummy": ViewPageEntry(self.interior, column=5, label="Arrival date:")}),
              ("departure",
-              {"dummy": ViewPageEntry(self.interior, column=5, label="Departure date:")}),
+              {"dummy": ViewPageEntry(self.interior, column=6, label="Departure date:")}),
              ("nights",
-              {"dummy": ViewPageEntry(self.interior, column=6, label="Nights:")}),
+              {"dummy": ViewPageEntry(self.interior, column=7, label="Nights:")}),
              ("agency",
-              {"dummy": ViewPageEntry(self.interior, column=7, label="Booking agancy:")}),
+              {"dummy": ViewPageEntry(self.interior, column=8, label="Booking agancy:")}),
              ("agency_fee",
-              {"dummy": ViewPageEntry(self.interior, column=8, label="Agency fee:")}),
+              {"dummy": ViewPageEntry(self.interior, column=9, label="Agency fee:")}),
              ("agent",
-              {"dummy": ViewPageEntry(self.interior, column=9, label="Agent:")}),
+              {"dummy": ViewPageEntry(self.interior, column=10, label="Agent:")}),
              ("cleanings",
-              {"dummy": ViewPageEntry(self.interior, column=10, label="Cleaner:")}),
+              {"dummy": ViewPageEntry(self.interior, column=11, label="Cleaner:")}),
              ("night_fare",
-               {"dummy": ViewPageEntry(self.interior, column=11, label="Night fare:")}),
+               {"dummy": ViewPageEntry(self.interior, column=12, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=12, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=13, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=15, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=15, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=16, label="Balance:")}),
              ("cleaning",
-              {"dummy": ViewPageEntry(self.interior, column=16, label="Cleaning:", function=self.computeCleaning)}),
+              {"dummy": ViewPageEntry(self.interior, column=17, label="Cleaning:", function=self.computeCleaning)}),
              ("agent_fee",
-              {"dummy": ViewPageEntry(self.interior, column=17, label="Agent 10%:", function=self.computeAgent)}),
+              {"dummy": ViewPageEntry(self.interior, column=18, label="Agent 10%:", function=self.computeAgent)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=18, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=19, label="IVA (11%):", function=self.computeIVA)}),
              ("net_income",
-              {"dummy": ViewPageEntry(self.interior, column=19, label="Net income:", function=self.netIncome)}),
+              {"dummy": ViewPageEntry(self.interior, column=20, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.forgotten_customers = []
@@ -191,6 +220,20 @@ class CustomersPageApp():
         self.placeFieldsLabel(shift=shift)
         for key, widget in self.widget_view_page.items():
             widget["fields"]=[]
+
+    def trimRoomsField(self, *args):
+        """
+        Trim room selection based on chosen building:
+        - the old "room" widget is deleted
+        - a new one is created
+        """
+
+        self.rooms_options = common.rooms_bld_map[self.bld_var.get()]
+        print(self.rooms_options)
+        #self.room_filter = tkinter.ttk.OptionMenu(self.filters_frame, self.room_var,
+         #                                         self.rooms_options[0], *self.rooms_options, style="HMDefault.TMenubutton")
+        #self.room_filter.pack(side="left", fill="x")
+        self.room_var.set(self.rooms_options[0])
             
     def placeFieldsLabel(self, shift):
         column = 3
@@ -292,8 +335,17 @@ class CustomersPageApp():
             end = datetime.datetime.strptime(self.period_end_var.get(), '%d/%m/%y')
         elif len(self.period_end_var.get()) == 10:
             end = datetime.datetime.strptime(self.period_end_var.get(), '%d/%m/%Y')
-            
-        self.db_cursor.execute('''SELECT * FROM customers WHERE arrival > ? AND departure < ? ORDER BY arrival ASC ''', [begin, end])
+
+        ###---filters
+        filter_str = ""
+        if self.bld_var.get() != self.bld_options[0]:
+            filter_str += ' AND building = "%s"' %  self.bld_var.get()
+        if self.agent_var.get() != self.agent_options[0]:
+            filter_str += ' AND agent = "%s"' %  self.agent_var.get()
+        
+        ###---db query
+        query_str = '''SELECT * FROM customers WHERE arrival > ? AND departure < ? %s ORDER BY arrival ASC''' % filter_str
+        self.db_cursor.execute(query_str, [begin, end])
         customers = self.db_cursor.fetchall()
     
         ###---create rows for fetched data
