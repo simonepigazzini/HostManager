@@ -6,10 +6,10 @@ import tkinter
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
-class PagesContainerApp(tkinter.Tk):
+class PagesContainerApp(tkinter.ttk.Frame):
     def __init__(self, parent=None):
         ###---create from parent class
-        tkinter.Tk.__init__(self, parent)
+        tkinter.ttk.Frame.__init__(self, parent)
         self.grid()
         
         ###---class objects

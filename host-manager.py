@@ -26,22 +26,25 @@ if __name__ == "__main__":
     if not cursor.fetchone():
         cursor.execute(
             '''
-            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, phone TEXT, building TEXT, room TEXT, 
-            arrival DATE, departure DATE, nights INTEGER, agency TEXT, agency_fee REAL, agent TEXT,
-            cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, payed REAL, balance REAL)
+            CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, nguests REAL, phone TEXT, 
+            building TEXT, room TEXT, arrival DATE, departure DATE, nights INTEGER, agency TEXT, 
+            agency_fee REAL, agent TEXT, cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, 
+            payed REAL, balance REAL)
             '''
         )
         db.commit()
-        
-    app = PagesContainerApp()    
-    app.title('Artesia Host Manager')
+
+    gui = tkinter.Tk()    
+    gui.title('Artesia Host Manager')
+
+    app = PagesContainerApp(gui)    
 
     home_app = HomePage(app.addTab("Home"))
     insert_app = InsertPageApp(cursor, app.addTab("New customer"))
     customers_app = CustomersPageApp(cursor, app.addTab("View customers"))
     db.commit()
     
-    app.mainloop()    
+    gui.mainloop()    
     db.commit()
 
     cursor.execute('''SELECT * FROM customers''')
