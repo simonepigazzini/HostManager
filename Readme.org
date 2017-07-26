@@ -1,3 +1,11 @@
 * Host Manager
 ** Execute
-   =host-manager=
+   =./host-manager=
+
+** Home Page
+   The home page let the user interact with repo:
+   - =Update= : click on the icon to update the software (db is not updated).
+   - =Download= : click on the icon to download only DB changes from the repository.
+   - =Upload= : click on the icon to upload local DB changes to the repository (usually done after inserting a new customer).
+
+   
