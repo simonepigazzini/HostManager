@@ -49,7 +49,7 @@ class InsertPageEntryMenu(InsertPageWidget):
         self.tk_widget = tkinter.ttk.OptionMenu(self.parent, self.tk_var, options[0], *options, style="HMDefault.TMenubutton")
         
 class InsertPageApp():
-    def __init__(self, db_cursor, parent=None):
+    def __init__(self, db_cursor, parent=None, customer=common.customer_default):
         ###---create from parent class
         self.parent = parent
         self.parent.bind("<Configure>", self.autoResize)
@@ -62,6 +62,7 @@ class InsertPageApp():
         tkinter.ttk.Style().configure("HMDefault.TMenubutton", background="white", borderwidth=2, relief="flat")
         
         ###---data
+        self.customer = customer
         self.stay_info = {}
         self.rooms = common.rooms_bld_map
         
@@ -73,46 +74,57 @@ class InsertPageApp():
         std_menu_callbacks = {}
         self.widget_insert_page = odict(
             [("fullname",
-              InsertPageEntry(self.parent, row=0, column=0, label="Full name:", text="Enter customer full name",
+              InsertPageEntry(self.parent, row=0, column=0, label="Full name:", text=customer["fullname"],
+                              callback_map=std_entry_callbacks)),
+             ("nguests",
+              InsertPageEntry(self.parent, row=0, column=1, label="Number of guests:", text=customer["nguests"],
                               callback_map=std_entry_callbacks)),
              ("phone",
-              InsertPageEntry(self.parent, row=0, column=1, label="Phone number:", text="+XX-##########",
+              InsertPageEntry(self.parent, row=0, column=2, label="Phone number:", text=customer["phone"],
                               callback_map=std_entry_callbacks)),
              ("building",
-              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=common.buildings)),
+              InsertPageEntryMenu(self.parent, row=1, column=0, label="Building:", options=customer["building"])),
              ("room",
               InsertPageEntryMenu(self.parent, row=1, column=1, label="Room:",
-                                  options=self.rooms["Villa Maria"])),
+                                  options=customer["room"])),
              ("arrival",
-              InsertPageEntry(self.parent, row=2, column=0, label="Arrival date:", text="dd/mm/year",
+              InsertPageEntry(self.parent, row=2, column=0, label="Arrival date:", text=customer["arrival"],
                               callback_map=std_entry_callbacks)),
              ("departure",
-              InsertPageEntry(self.parent, row=2, column=1, label="Departure date:", text="dd/mm/year",
+              InsertPageEntry(self.parent, row=2, column=1, label="Departure date:", text=customer["departure"],
                               callback_map=std_entry_callbacks)),
              ("nights",
-              InsertPageEntry(self.parent, row=2, column=2, label="Nights:", text="",
+              InsertPageEntry(self.parent, row=2, column=2, label="Nights:", text=customer["nights"],
                               callback_map=std_entry_callbacks, state="disable")),              
              ("agency",
               InsertPageEntryMenu(self.parent, row=3, column=0, label="Booking agancy:",
-                                  options=["None", "Booking", "Airbnb", "Homeaway", "Homeholidays", "Expedia"])),
+                                  options=customer["agency"])),
              ("agency_fee",
-              InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text="fee (euro)", callback_map=std_entry_callbacks)),
+              InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text=customer["agency_fee"],
+                              callback_map=std_entry_callbacks)),
              ("agent",
               InsertPageEntryMenu(self.parent, row=3, column=2, label="Agent:",
-                                  options=common.agents)),
+                                  options=customer["agent"])),
              ("night_fare",
-              InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text="price", callback_map=std_entry_callbacks)),
+              InsertPageEntry(self.parent, row=4, column=0, label="Night fare:", text=customer["night_fare"],
+                              callback_map=std_entry_callbacks)),
              ("extras",
-              InsertPageEntry(self.parent, row=4, column=1, label="Extras:", text="extras total price", callback_map=std_entry_callbacks)),
+              InsertPageEntry(self.parent, row=4, column=1, label="Extras:", text=customer["extras"],
+                              callback_map=std_entry_callbacks)),
              ("total_price",
-              InsertPageEntry(self.parent, row=4, column=2, label="Total price:", text="total", callback_map=std_entry_callbacks)),
+              InsertPageEntry(self.parent, row=4, column=2, label="Total price:", text=customer["total_price"],
+                              callback_map=std_entry_callbacks)),
              ("payed",
-              InsertPageEntry(self.parent, row=5, column=2, label="Payed:", text="0", callback_map=std_entry_callbacks)),
+              InsertPageEntry(self.parent, row=5, column=2, label="Payed:", text=customer["payed"],
+                              callback_map=std_entry_callbacks)),
              ("balance",
-              InsertPageEntry(self.parent, row=6, column=2, label="Balance:", text="", callback_map=std_entry_callbacks, state="disable")),
+              InsertPageEntry(self.parent, row=6, column=2, label="Balance:", text=customer["balance"],
+                              callback_map=std_entry_callbacks, state="disable")),
             ]
         )
         self.widget_insert_page["fullname"].callback_map["<FocusOut>"] = self.checkEmptyField
+        self.widget_insert_page["nguests"].callback_map["<Key>"] = self.priceCallback
+        self.widget_insert_page["nguests"].callback_map["<FocusOut>"] = self.checkEmptyField
         self.widget_insert_page["phone"].callback_map["<FocusOut>"] = self.checkPhoneNumber
         self.widget_insert_page["arrival"].callback_map["<FocusOut>"] = self.validateDate
         self.widget_insert_page["arrival"].callback_map["<Key>"] = self.dateCallback
@@ -173,7 +185,7 @@ class InsertPageApp():
         if self.widget_insert_page_item[event.widget].tk_var.get() == self.widget_insert_page_item[event.widget].text:
             event.widget.delete(0, "end")        
             event.widget.config(style="HMInsert.TEntry")
-
+            
     def priceCallback(self, event):
         value = event.char
         entry = self.widget_insert_page_item[event.widget].tk_var.get()
@@ -213,7 +225,7 @@ class InsertPageApp():
         """
 
         field_str = self.widget_insert_page_item[event.widget].tk_var.get()
-        if field_str == "" or not self.widget_insert_page_item[event.widget].isModified():
+        if field_str == "" or (not self.widget_insert_page_item[event.widget].isModified() and self.customer["id"] == -1):
             self.widget_insert_page_item[event.widget].tk_var.set(self.widget_insert_page_item[event.widget].text)
             self.widget_insert_page_item[event.widget].tk_label.config(style="HMError.TLabel")
             self.widget_insert_page_item[event.widget].is_good_flag = False
@@ -366,6 +378,7 @@ class InsertPageApp():
             
     def insertCustomer(self):        
         new_customer = {key: widget.tk_var.get() for key, widget in self.widget_insert_page.items()}
+        new_customer["id"] = self.customer["id"]
         ###---fix value for cleanings (Mariagrazia)
         new_customer["cleanings"] = "Mariagrazia"
         ###---convert dates string into datetime objects
@@ -377,15 +390,29 @@ class InsertPageApp():
             new_customer['departure'] = datetime.datetime.strptime(new_customer['departure'], '%d/%m/%y').date()
         elif len(new_customer['departure']) == 10:
             new_customer['departure'] = datetime.datetime.strptime(new_customer['departure'], '%d/%m/%Y').date()
-            
-        self.dbc.execute(
-        '''
-        INSERT INTO Customers(fullname, phone, building, room, arrival, departure, nights, agency, 
-        agency_fee, agent, cleanings, night_fare, extras, total_price, payed, balance)
-        VALUES(:fullname, :phone, :building, :room, :arrival, :departure, :nights, :agency,
-        :agency_fee, :agent, :cleanings, :night_fare, :extras, :total_price, :payed, :balance)
-        ''',
-        new_customer)
+
+        ###---new customer
+        if new_customer["id"] == -1:
+            self.dbc.execute(
+                '''
+                INSERT INTO Customers(fullname, nguests, phone, building, room, arrival, departure, nights, agency, 
+                agency_fee, agent, cleanings, night_fare, extras, total_price, payed, balance)
+                VALUES(:fullname, :nguests, :phone, :building, :room, :arrival, :departure, :nights, :agency,
+                :agency_fee, :agent, :cleanings, :night_fare, :extras, :total_price, :payed, :balance)
+                ''',
+            new_customer)
+        ###---modified customer
+        else:
+            self.dbc.execute(
+                '''
+                UPDATE Customers SET 
+                fullname = :fullname, nguests = :nguests, phone = :phone, building = :building, 
+                room = :room, arrival = :arrival, departure = :departure, nights = :nights, agency = :agency, 
+                agency_fee = :agency_fee, agent = :agent, cleanings = :cleanings, night_fare = :night_fare, 
+                extras = :extras, total_price = :total_price, payed = :payed, balance = :balance
+                WHERE id = :id
+                ''',
+            new_customer)
 
         self.initializeInsertPage()
 

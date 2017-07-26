@@ -13,8 +13,12 @@ from tkinter.ttk import *
 from collections import OrderedDict as odict
 
 import common
+from pages_container import *
+from insert_page import *
 
 def is_number(s):
+    if not s:
+        return False
     try:
         float(s)
         return True
@@ -162,44 +166,46 @@ class CustomersPageApp():
               {"dummy": ViewPageEntryId(self.interior, column=0, label="ID number:")}),
              ("fullname",
               {"dummy": ViewPageEntry(self.interior, column=1, label="Full name:")}),
+             ("nguests",
+              {"dummy": ViewPageEntry(self.interior, column=2, label="Guests:")}),
              ("phone",
-              {"dummy": ViewPageEntry(self.interior, column=2, label="Phone:")}),
+              {"dummy": ViewPageEntry(self.interior, column=3, label="Phone:")}),
              ("building",
-              {"dummy": ViewPageEntry(self.interior, column=3, label="Building:")}),
+              {"dummy": ViewPageEntry(self.interior, column=4, label="Building:")}),
              ("room",
-              {"dummy": ViewPageEntry(self.interior, column=4, label="Room:")}),
+              {"dummy": ViewPageEntry(self.interior, column=5, label="Room:")}),
              ("arrival",
-              {"dummy": ViewPageEntry(self.interior, column=5, label="Arrival date:")}),
+              {"dummy": ViewPageEntry(self.interior, column=6, label="Arrival date:")}),
              ("departure",
-              {"dummy": ViewPageEntry(self.interior, column=6, label="Departure date:")}),
+              {"dummy": ViewPageEntry(self.interior, column=7, label="Departure date:")}),
              ("nights",
-              {"dummy": ViewPageEntry(self.interior, column=7, label="Nights:")}),
+              {"dummy": ViewPageEntry(self.interior, column=8, label="Nights:")}),
              ("agency",
-              {"dummy": ViewPageEntry(self.interior, column=8, label="Booking agancy:")}),
+              {"dummy": ViewPageEntry(self.interior, column=9, label="Booking agancy:")}),
              ("agency_fee",
-              {"dummy": ViewPageEntry(self.interior, column=9, label="Agency fee:")}),
+              {"dummy": ViewPageEntry(self.interior, column=10, label="Agency fee:")}),
              ("agent",
-              {"dummy": ViewPageEntry(self.interior, column=10, label="Agent:")}),
+              {"dummy": ViewPageEntry(self.interior, column=11, label="Agent:")}),
              ("cleanings",
-              {"dummy": ViewPageEntry(self.interior, column=11, label="Cleaner:")}),
+              {"dummy": ViewPageEntry(self.interior, column=12, label="Cleaner:")}),
              ("night_fare",
-               {"dummy": ViewPageEntry(self.interior, column=12, label="Night fare:")}),
+               {"dummy": ViewPageEntry(self.interior, column=13, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=13, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=15, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=15, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=16, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=16, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=17, label="Balance:")}),
              ("cleaning",
-              {"dummy": ViewPageEntry(self.interior, column=17, label="Cleaning:", function=self.computeCleaning)}),
+              {"dummy": ViewPageEntry(self.interior, column=18, label="Cleaning:", function=self.computeCleaning)}),
              ("agent_fee",
-              {"dummy": ViewPageEntry(self.interior, column=18, label="Agent 10%:", function=self.computeAgent)}),
+              {"dummy": ViewPageEntry(self.interior, column=19, label="Agent 10%:", function=self.computeAgent)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=19, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=20, label="IVA (11%):", function=self.computeIVA)}),
              ("net_income",
-              {"dummy": ViewPageEntry(self.interior, column=20, label="Net income:", function=self.netIncome)}),
+              {"dummy": ViewPageEntry(self.interior, column=21, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.forgotten_customers = []
@@ -220,7 +226,7 @@ class CustomersPageApp():
         self.placeFieldsLabel(shift=shift)
         for key, widget in self.widget_view_page.items():
             widget["fields"]=[]
-
+        
     def trimRoomsField(self, *args):
         """
         Trim room selection based on chosen building:
@@ -306,8 +312,24 @@ class CustomersPageApp():
         self.forgotten_customers.append(customer_row)
         self.refreshData(event)
 
-    def editCustomer(self, event):
-        return
+    def editCustomer(self, event, cst):
+        """
+        Open a popup window to modify customer data (using insert_page)
+        """
+
+        customer = {key : cst[i] for i, key in enumerate(common.customer_default)}
+        customer["building"] = [customer["building"]] + common.customer_default["building"]
+        customer["room"] = common.rooms_bld_map[customer["building"][0]]
+        customer["agency"] = [customer["agency"]] + common.customer_default["agency"]
+        customer["agent"] = [customer["agent"]] + common.customer_default["agent"]        
+        
+        popup = tkinter.Toplevel(self.parent)
+        
+        app = PagesContainerApp(parent=popup)    
+        
+        modify_app = InsertPageApp(self.db_cursor, app.addTab("Modify customer"), customer=customer)
+        
+        return("break")
         
     def showData(self, event):
         """
@@ -384,7 +406,7 @@ class CustomersPageApp():
             edit_button = tkinter.ttk.Button(self.interior, image=self.edit_icon_tk)
             edit_button.image = self.edit_icon_tk
             edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
-            edit_button.bind("<Button-1>", self.editCustomer)
+            edit_button.bind("<Button-1>", lambda event, cst=customer : self.editCustomer(event, cst=cst))
             
             ###---data fields
             next_column = 3
@@ -401,7 +423,7 @@ class CustomersPageApp():
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
                     next_column += 1
                 ###---compute sums if applicable
-                field_sum[index] = field_sum[index]+float(data) if is_number(data) else None
+                field_sum[index] = field_sum[index]+float(data) if is_number(data) and not index == 2 else None
 
             ###---compute fields that are not stored in the db
             for name, field in [(name, widgets["dummy"]) for name, widgets in self.widget_view_page.items()
@@ -437,7 +459,9 @@ class CustomersPageApp():
                 value = "Total:" if widget.column == 0 else value
                 widget_list[index][1]["fields"][-1].tk_var.set(value)
                 next_column += 1
-            
+
+        ###---save as csv and pdf buttons
+                
     def dateCallback(self, event):
         value = event.char
         widget = self.period_begin if event.widget == self.period_begin else self.period_end
