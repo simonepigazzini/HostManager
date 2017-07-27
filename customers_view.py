@@ -30,12 +30,13 @@ def is_number(s):
         return False    
     
 class ViewPageEntry():
-    def __init__(self, parent, column=0, row=0, label="", function=None, **kwargs):
+    def __init__(self, parent, column=0, row=0, label="", dosum=False, function=None, **kwargs):
         self.parent = parent
         self.column = int(column)
         self.row = int(row)
         self.label = label
-        self.function = function
+        self.dosum = dosum
+        self.function = function        
         self.widget_width = len(self.label)+3
         
         self.tk_label = tkinter.ttk.Button(self.parent, text=label, width=self.widget_width)
@@ -72,7 +73,7 @@ class CustomersPageApp():
         ###---global static page widget
         ###---analyzed period begin
         query_frame = tkinter.ttk.Frame(self.parent)
-        query_frame.pack(anchor="nw", fill="x")
+        query_frame.pack(anchor="nw", expand=True, fill="x")
         self.period_begin_label_str = tkinter.StringVar()
         self.period_begin_label = tkinter.ttk.Label(query_frame, textvariable=self.period_begin_label_str, style="HM.TLabel")
         self.period_begin_label.pack(side="left", anchor="nw", expand=True)
@@ -81,7 +82,7 @@ class CustomersPageApp():
         self.period_begin_default = "01/01/%Y"
         self.period_begin = tkinter.ttk.Entry(query_frame, textvariable=self.period_begin_var,
                                               font='TkDefaultFont 11', style="HMDefault.TEntry")
-        self.period_begin.pack(side="left", expand=True)
+        self.period_begin.pack(side="left", anchor="nw", expand=True)
         self.period_begin_var.set(time.strftime(self.period_begin_default))
         self.period_begin.bind("<Button-1>", self.clickCallback)
         self.period_begin.bind("<Tab>", self.tabCallback)
@@ -89,13 +90,13 @@ class CustomersPageApp():
         ###---analyzed period end
         self.period_end_label_str = tkinter.StringVar()        
         self.period_end_label = tkinter.ttk.Label(query_frame, textvariable=self.period_end_label_str, style="HM.TLabel")
-        self.period_end_label.pack(side="left", expand=True)
+        self.period_end_label.pack(side="left", anchor="nw", expand=True)
         self.period_end_label_str.set("Period end:")
         self.period_end_var = tkinter.StringVar()
         self.period_end_default = datetime.datetime.strftime(datetime.datetime.now(), "%d/%m/%Y")
         self.period_end = tkinter.ttk.Entry(query_frame, textvariable=self.period_end_var,
                                               font='TkDefaultFont 11', style="HMDefault.TEntry")
-        self.period_end.pack(side="left", expand=True)
+        self.period_end.pack(side="left", anchor="nw", expand=True)
         self.period_end_var.set(time.strftime(self.period_end_default))
         self.period_end.bind("<Button-1>", self.clickCallback)
         self.period_end.bind("<Tab>", self.tabCallback)
@@ -106,27 +107,14 @@ class CustomersPageApp():
         self.show_data_button.bind("<Button-1>", self.showData)
         self.show_data_button.bind("<Return>", self.showData)
         
-        ###---create scrollable frame
-        self.xscroll = tkinter.ttk.Scrollbar(self.parent, orient="horizontal")
-        self.xscroll.pack(fill="x", side="bottom", expand=False)
-        self.canvas = tkinter.Canvas(self.parent, xscrollcommand=self.xscroll.set)
-        self.canvas.pack(side="bottom", fill="both", anchor="nw", expand=True)
-        self.xscroll.config(command=self.canvas.xview)
-        self.interior = tkinter.ttk.Frame(self.canvas)
-        interior_id = self.canvas.create_window(0, 0, window=self.interior, anchor="nw")
-
-        def syncFunction(event):
-            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        self.interior.bind("<Configure>", syncFunction)
-
         ###---query frame separator
         query_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
-        query_separetor.pack(side="bottom", fill="x")
+        query_separetor.pack(side="top", fill="x")
 
         ###---filters frame
         tkinter.ttk.Style().configure("HMDefault.TMenubutton", background="white", borderwidth=2, relief="flat")
         self.filters_frame = tkinter.ttk.Frame(self.parent)
-        self.filters_frame.pack(side="bottom", anchor="nw", fill="x")
+        self.filters_frame.pack(side="top", anchor="nw", fill="x")
         self.filters_label = tkinter.ttk.Label(self.filters_frame, text="Filters: ",
                                                   width=len("Filters: ")+3, style="HM.TLabel")
         self.filters_label.pack(anchor="nw")
@@ -154,18 +142,33 @@ class CustomersPageApp():
         self.agent_filter.pack(side="left", fill="x")
         #---end of filter frame
         filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
-        filters_separetor.pack(side="bottom", fill="x")        
-
+        filters_separetor.pack(side="top", fill="x")        
         
         ###---disabled field list
         self.disabled_fields_frame = tkinter.ttk.Frame(self.parent)
-        self.disabled_fields_frame.pack(side="bottom", anchor="nw", fill="x")
+        self.disabled_fields_frame.pack(side="top", anchor="nw", fill="x")
         self.disabled_label = tkinter.ttk.Label(self.disabled_fields_frame, text="Disabled fields: ",
                                                 width=len("Disabled fields: ")+3, style="HM.TLabel")
         self.disabled_label.pack(anchor="nw")
         disabled_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
-        disabled_separetor.pack(side="bottom", fill="x")
+        disabled_separetor.pack(side="top", fill="x")        
 
+        ###---create scrollable frame
+        self.xscroll = tkinter.ttk.Scrollbar(self.parent, orient="horizontal")
+        self.xscroll.pack(fill="x", side="bottom", expand=False)
+        self.yscroll = tkinter.ttk.Scrollbar(self.parent, orient="vertical")
+        self.yscroll.pack(fill="y", side="right", expand=False)
+        self.canvas = tkinter.Canvas(self.parent, xscrollcommand=self.xscroll.set, yscrollcommand=self.yscroll.set)
+        self.canvas.pack(side="bottom", fill="both", anchor="sw", expand=True)
+        self.xscroll.config(command=self.canvas.xview)
+        self.yscroll.config(command=self.canvas.yview)
+        self.interior = tkinter.ttk.Frame(self.canvas)
+        interior_id = self.canvas.create_window(0, 0, window=self.interior, anchor="nw")
+
+        def syncFunction(event):
+            self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        self.interior.bind("<Configure>", syncFunction)
+        
         ###---field widgets
         self.widget_view_page = odict(
             [("id",
@@ -189,7 +192,7 @@ class CustomersPageApp():
              ("agency",
               {"dummy": ViewPageEntry(self.interior, column=9, label="Booking agancy:")}),
              ("agency_fee",
-              {"dummy": ViewPageEntry(self.interior, column=10, label="Agency fee:")}),
+              {"dummy": ViewPageEntry(self.interior, column=10, dosum=True, label="Agency fee:")}),
              ("agent",
               {"dummy": ViewPageEntry(self.interior, column=11, label="Agent:")}),
              ("cleanings",
@@ -197,21 +200,21 @@ class CustomersPageApp():
              ("night_fare",
                {"dummy": ViewPageEntry(self.interior, column=13, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, dosum=True, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=15, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=15, dosum=True, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=16, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=16, dosum=True, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=17, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=17, dosum=True, label="Balance:")}),
              ("cleaning",
-              {"dummy": ViewPageEntry(self.interior, column=18, label="Cleaning:", function=self.computeCleaning)}),
+              {"dummy": ViewPageEntry(self.interior, column=18, dosum=True, label="Cleaning:", function=self.computeCleaning)}),
              ("agent_fee",
-              {"dummy": ViewPageEntry(self.interior, column=19, label="Agent 10%:", function=self.computeAgent)}),
+              {"dummy": ViewPageEntry(self.interior, column=19, dosum=True, label="Agent 10%:", function=self.computeAgent)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=20, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=20, dosum=True, label="IVA (11%):", function=self.computeIVA)}),
              ("net_income",
-              {"dummy": ViewPageEntry(self.interior, column=21, label="Net income:", function=self.netIncome)}),
+              {"dummy": ViewPageEntry(self.interior, column=21, dosum=True, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.forgotten_customers = []
@@ -426,7 +429,8 @@ class CustomersPageApp():
             for index, data in enumerate(customer):
                 widget = ViewPageEntry(self.interior,
                                        column=widget_list[index][1]["dummy"].column,
-                                       label=widget_list[index][1]["dummy"].label)
+                                       label=widget_list[index][1]["dummy"].label,
+                                       dosum=widget_list[index][1]["dummy"].dosum)
                 widget_list[index][1]["fields"].append(widget)
                 if widget_list[index][0] in self.disabled_fields:
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
@@ -437,13 +441,17 @@ class CustomersPageApp():
                     widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
                     next_column += 1
-                ###---compute sums if applicable
-                field_sum[index] = field_sum[index]+float(data) if is_number(data) and not index == 2 else None
-
+                    ###---compute sums if applicable
+                    if widget_list[index][1]["fields"][-1].dosum:
+                        field_sum[index] += data if data else 0
+                    else:
+                        field_sum[index] = None
+                    
             ###---compute fields that are not stored in the db
             for name, field in [(name, widgets["dummy"]) for name, widgets in self.widget_view_page.items()
                                 if widgets["dummy"].function != None]:
-                widget = ViewPageEntry(self.interior, column=field.column, label=field.label, function=field.function)
+                widget = ViewPageEntry(self.interior, column=field.column, label=field.label,
+                                       dosum=field.dosum, function=field.function)
                 widget_list[index][1]["fields"].append(widget)                
                 if name in self.disabled_fields:
                     widget_list[index][1]["fields"][-1].tk_var.set(widget.function())
@@ -455,8 +463,11 @@ class CustomersPageApp():
                     widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
                     next_column += 1
-                ###---compute sums if applicable
-                field_sum[widget.column] += widget.function()
+                    ###---compute sums if applicable
+                    if widget_list[index][1]["fields"][-1].dosum:
+                        field_sum[widget.column] += data
+                    else:
+                        field_sum[widget.column] = None
                 
             pdf_matrix.append(copy.copy(pdf_row))
                 
@@ -479,7 +490,8 @@ class CustomersPageApp():
                 value = field_sum[index] if field_sum[index] else ""
                 value = "Total:" if widget.column == 0 else value
                 widget_list[index][1]["fields"][-1].tk_var.set(value)
-                pdf_row.append(value)
+                if index != 0:
+                    pdf_row.append(value)
                 next_column += 1
 
             pdf_matrix.append(copy.copy(pdf_row))
@@ -488,7 +500,9 @@ class CustomersPageApp():
         doc = SimpleDocTemplate("report.pdf", pagesize=landscape(A4))
         elements = []
         table = Table(pdf_matrix, len(self.pdf_top_row)*[3*cm], len(pdf_matrix)*[1*cm])
-        table.setStyle(TableStyle([('ALIGN',(0,0),(0,0),'LEFT')
+        table.setStyle(TableStyle([('ALIGN',(0,0),(0,0),'LEFT'),
+                                   ('FONTSIZE', (0, 0), (0, 0), 9),
+                                   ('BACKGROUND', (-1, 0), (-1, -1), colors.red)
         ]))
         elements.append(table)
         doc.build(elements)

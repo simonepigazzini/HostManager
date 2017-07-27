@@ -10,7 +10,7 @@ class PagesContainerApp(tkinter.ttk.Frame):
     def __init__(self, parent=None):
         ###---create from parent class
         tkinter.ttk.Frame.__init__(self, parent)
-        self.grid()
+        self.pack(side="left", expand=1, fill="both")
         
         ###---class objects
         self.n_tabs = 0
@@ -34,8 +34,8 @@ class PagesContainerApp(tkinter.ttk.Frame):
         self.n_tabs += 1
         self.pages[name] = tkinter.ttk.Frame(self)
         self.notebook.add(self.pages[name], text=name, underline=0)
-        self.notebook.pack(expand=1, fill="both")
+        self.notebook.pack(side="left", expand=1, fill="both")
         # tkinter.ttk.Style().configure("HM.TFrame", background="black")
         # self.pages[name].config(style="HM.TFrame")
-
+        
         return self.pages[name]
