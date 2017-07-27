@@ -12,6 +12,10 @@ from tkinter import messagebox
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, cm, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
 import common
 from pages_container import *
 from insert_page import *
@@ -57,12 +61,14 @@ class ViewPageEntryId(ViewPageEntry):
         
 class CustomersPageApp():
     def __init__(self, db_cursor, parent=None):
-        ###---story copy of db access cursor        
+        ###---store copy of db access cursor        
         self.db_cursor = db_cursor
         ###---create from parent class
         self.parent = parent
         self.parent.bind("<Configure>", self.autoResize)
 
+        self.pdf_top_row = []
+        
         ###---global static page widget
         ###---analyzed period begin
         query_frame = tkinter.ttk.Frame(self.parent)
@@ -250,6 +256,7 @@ class CustomersPageApp():
                 widget["dummy"].tk_label.pack(side="left")
                 widget["dummy"].tk_label.bind("<Button-1>", self.showField)
             elif key != "id":
+                self.pdf_top_row.append(widget["dummy"].label)
                 widget["dummy"].tk_label.grid_forget()
                 widget["dummy"].reloadLabel()
                 widget["dummy"].tk_label.grid(row=shift, column=column, sticky="NWE")                
@@ -263,12 +270,14 @@ class CustomersPageApp():
         self.widget_view_page_name = odict([(item["dummy"].tk_label, key) for key, item in self.widget_view_page.items()])
         
     def hideField(self, event):
+        self.pdf_top_row = []
         event.widget.grid_forget()
         self.disabled_fields.append(self.widget_view_page_name[event.widget])
         self.placeFieldsLabel(shift=1)
         self.refreshData(event)
 
     def showField(self, event):
+        self.pdf_top_row = []
         event.widget.pack_forget()
         self.disabled_fields.remove(self.widget_view_page_name[event.widget])
         self.placeFieldsLabel(shift=1)
@@ -308,7 +317,7 @@ class CustomersPageApp():
         """
         Remove customer from current view, resetted by "Show Data"
         """
-
+        
         self.forgotten_customers.append(customer_row)
         self.refreshData(event)
 
@@ -369,14 +378,17 @@ class CustomersPageApp():
         query_str = '''SELECT * FROM customers WHERE arrival > ? AND departure < ? %s ORDER BY arrival ASC''' % filter_str
         self.db_cursor.execute(query_str, [begin, end])
         customers = self.db_cursor.fetchall()
-    
+
+        ###---matrix for pdf output
+        pdf_matrix = [self.pdf_top_row]
+        
         ###---create rows for fetched data
         widget_list = list(self.widget_view_page.items())
         for key, widget in widget_list:
             for field in widget["fields"]:
                 field.tk_widget.grid_remove()
             widget["fields"] = []
-        field_sum = [0 for x in range(0, len(widget_list))]
+        field_sum = [0 for x in range(0, len(widget_list))]        
         for row, customer in enumerate(customers):
             ###---skip removed customers
             if row in self.forgotten_customers:
@@ -407,8 +419,9 @@ class CustomersPageApp():
             edit_button.image = self.edit_icon_tk
             edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
             edit_button.bind("<Button-1>", lambda event, cst=customer : self.editCustomer(event, cst=cst))
-            
+
             ###---data fields
+            pdf_row = []
             next_column = 3
             for index, data in enumerate(customer):
                 widget = ViewPageEntry(self.interior,
@@ -418,6 +431,8 @@ class CustomersPageApp():
                 if widget_list[index][0] in self.disabled_fields:
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
                 else:
+                    if index!=0:
+                        pdf_row.append(data)
                     widget_list[index][1]["fields"][-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
                     widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
                     widget_list[index][1]["fields"][-1].tk_var.set(data)
@@ -433,17 +448,23 @@ class CustomersPageApp():
                 if name in self.disabled_fields:
                     widget_list[index][1]["fields"][-1].tk_var.set(widget.function())
                 else:
+                    data = widget.function()
+                    if index!=0:
+                        pdf_row.append(data)
                     widget_list[index][1]["fields"][-1].tk_widget.grid(row=next_row, column=next_column, sticky="NWE")
                     widget_list[index][1]["fields"][-1].tk_widget.config(state = "disabled")
-                    widget_list[index][1]["fields"][-1].tk_var.set(widget.function())
+                    widget_list[index][1]["fields"][-1].tk_var.set(data)
                     next_column += 1
                 ###---compute sums if applicable
                 field_sum[widget.column] += widget.function()
+                
+            pdf_matrix.append(copy.copy(pdf_row))
                 
             next_row += 1
 
         ###---display sums
         if len(customers) > 0:
+            pdf_row = []
             self.sum_line = tkinter.ttk.Separator(self.interior, orient="horizontal")
             self.sum_line.grid(row=next_row, columnspan=len(widget_list), sticky="EW")
             next_row += 1
@@ -458,10 +479,20 @@ class CustomersPageApp():
                 value = field_sum[index] if field_sum[index] else ""
                 value = "Total:" if widget.column == 0 else value
                 widget_list[index][1]["fields"][-1].tk_var.set(value)
+                pdf_row.append(value)
                 next_column += 1
 
-        ###---save as csv and pdf buttons
+            pdf_matrix.append(copy.copy(pdf_row))
                 
+        ###---save as csv and pdf buttons
+        doc = SimpleDocTemplate("report.pdf", pagesize=landscape(A4))
+        elements = []
+        table = Table(pdf_matrix, len(self.pdf_top_row)*[3*cm], len(pdf_matrix)*[1*cm])
+        table.setStyle(TableStyle([('ALIGN',(0,0),(0,0),'LEFT')
+        ]))
+        elements.append(table)
+        doc.build(elements)
+        
     def dateCallback(self, event):
         value = event.char
         widget = self.period_begin if event.widget == self.period_begin else self.period_end
