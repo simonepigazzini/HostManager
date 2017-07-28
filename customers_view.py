@@ -401,27 +401,27 @@ class CustomersPageApp():
             delete_icon = Image.open("data/img/delete_icon.png")
             delete_icon = delete_icon.resize((16, 16), Image.ANTIALIAS)
             self.delete_icon_tk = ImageTk.PhotoImage(delete_icon)
-            delete_button = tkinter.ttk.Button(self.interior, image=self.delete_icon_tk)
-            delete_button.image = self.delete_icon_tk
-            delete_button.grid(columnspan=1, rowspan=1, column=0, row=next_row)
-            delete_button.bind("<Button-1>", lambda event, cid=customer[0], cname=customer[1] :
-                               self.deleteCustomer(event, cid = cid, cname = cname))
+            self.delete_button = tkinter.ttk.Button(self.interior, image=self.delete_icon_tk)
+            self.delete_button.image = self.delete_icon_tk
+            self.delete_button.grid(columnspan=1, rowspan=1, column=0, row=next_row)
+            self.delete_button.bind("<Button-1>", lambda event, cid=customer[0], cname=customer[1] :
+                                    self.deleteCustomer(event, cid = cid, cname = cname))
             ###---remove button
             remove_icon = Image.open("data/img/remove_icon.png")
             remove_icon = remove_icon.resize((16, 16), Image.ANTIALIAS)
             self.remove_icon_tk = ImageTk.PhotoImage(remove_icon)
-            remove_button = tkinter.ttk.Button(self.interior, image=self.remove_icon_tk)
-            remove_button.image = self.remove_icon_tk
-            remove_button.grid(columnspan=1, rowspan=1, column=1, row=next_row)
-            remove_button.bind("<Button-1>", lambda event, row=row : self.removeCustomer(event, customer_row = row))
+            self.remove_button = tkinter.ttk.Button(self.interior, image=self.remove_icon_tk)
+            self.remove_button.image = self.remove_icon_tk
+            self.remove_button.grid(columnspan=1, rowspan=1, column=1, row=next_row)
+            self.remove_button.bind("<Button-1>", lambda event, row=row : self.removeCustomer(event, customer_row = row))
             ###---edit button
             edit_icon = Image.open("data/img/edit_icon.png")
             edit_icon = edit_icon.resize((16, 16), Image.ANTIALIAS)
             self.edit_icon_tk = ImageTk.PhotoImage(edit_icon)
-            edit_button = tkinter.ttk.Button(self.interior, image=self.edit_icon_tk)
-            edit_button.image = self.edit_icon_tk
-            edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
-            edit_button.bind("<Button-1>", lambda event, cst=customer : self.editCustomer(event, cst=cst))
+            self.edit_button = tkinter.ttk.Button(self.interior, image=self.edit_icon_tk)
+            self.edit_button.image = self.edit_icon_tk
+            self.edit_button.grid(columnspan=1, rowspan=1, column=2, row=next_row)
+            self.edit_button.bind("<Button-1>", lambda event, cst=customer : self.editCustomer(event, cst=cst))
 
             ###---data fields
             pdf_row = []
