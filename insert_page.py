@@ -248,7 +248,7 @@ class InsertPageApp():
         Check phone number: force +X(X)-########## format
         """
 
-        phone_pattern = re.compile('\+[0-9]{1,2}-[0-9]{9,10}')
+        phone_pattern = re.compile('\+[0-9]{1,2}-[0-9]{8,10}')
         field_str = self.widget_insert_page_item[event.widget].tk_var.get()
         if not self.widget_insert_page_item[event.widget].isModified() or phone_pattern.match(field_str):
             self.widget_insert_page_item[event.widget].tk_label.config(style="HM.TLabel")
