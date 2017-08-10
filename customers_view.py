@@ -16,7 +16,8 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, cm, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
-import common
+#import common
+from common import *
 from pages_container import *
 from insert_page import *
 
