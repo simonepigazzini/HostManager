@@ -141,6 +141,14 @@ class CustomersPageApp():
                                                  *self.agent_options,
                                                  style="HMDefault.TMenubutton")
         self.agent_filter.pack(side="left", fill="x")
+        #---agency filter
+        self.agency_var = tkinter.StringVar()
+        self.agency_options = ["All agencies"] + common.agencies
+        self.agency_filter = tkinter.ttk.OptionMenu(self.filters_frame, self.agency_var,
+                                                 self.agency_options[0],
+                                                 *self.agency_options,
+                                                 style="HMDefault.TMenubutton")
+        self.agency_filter.pack(side="left", fill="x")
         #---end of filter frame
         filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
         filters_separetor.pack(side="top", fill="x")        
@@ -377,6 +385,8 @@ class CustomersPageApp():
             filter_str += ' AND building = "%s"' %  self.bld_var.get()
         if self.agent_var.get() != self.agent_options[0]:
             filter_str += ' AND agent = "%s"' %  self.agent_var.get()
+        if self.agency_var.get() != self.agency_options[0]:
+            filter_str += ' AND agency = "%s"' %  self.agency_var.get()
         
         ###---db query
         query_str = '''SELECT * FROM customers WHERE arrival > ? AND departure < ? %s ORDER BY arrival ASC''' % filter_str
