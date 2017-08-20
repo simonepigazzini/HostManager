@@ -97,7 +97,7 @@ class InsertPageApp():
               InsertPageEntry(self.parent, row=2, column=2, label="Nights:", text=customer["nights"],
                               callback_map=std_entry_callbacks, state="disable")),              
              ("agency",
-              InsertPageEntryMenu(self.parent, row=3, column=0, label="Booking agancy:",
+              InsertPageEntryMenu(self.parent, row=3, column=0, label="Booking agency:",
                                   options=customer["agency"])),
              ("agency_fee",
               InsertPageEntry(self.parent, row=3, column=1, label="Agency fee:", text=customer["agency_fee"],
