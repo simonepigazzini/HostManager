@@ -149,6 +149,14 @@ class CustomersPageApp():
                                                  *self.agency_options,
                                                  style="HMDefault.TMenubutton")
         self.agency_filter.pack(side="left", fill="x")
+        #---name filter
+        self.name_var = tkinter.StringVar()
+        self.name_filter = tkinter.ttk.Entry(self.filters_frame, textvariable=self.name_var,
+                                             font='TkDefaultFont 11', style="HMDefault.TEntry")
+        self.name_var.set("Customer name")
+        self.name_filter.bind("<Button-1>", self.clickCallback)
+        self.name_filter.bind("<Tab>", self.tabCallback)        
+        self.name_filter.pack(side="left", fill="x")
         #---end of filter frame
         filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
         filters_separetor.pack(side="top", fill="x")        
@@ -387,7 +395,9 @@ class CustomersPageApp():
             filter_str += ' AND agent = "%s"' %  self.agent_var.get()
         if self.agency_var.get() != self.agency_options[0]:
             filter_str += ' AND agency = "%s"' %  self.agency_var.get()
-        
+        if self.name_var.get() != "Customer name" and self.name_var.get() != "":
+            filter_str += " AND fullname LIKE '%" + self.name_var.get() + "%'"
+
         ###---db query
         query_str = '''SELECT * FROM customers WHERE arrival > ? AND departure < ? %s ORDER BY arrival ASC''' % filter_str
         self.db_cursor.execute(query_str, [begin, end])
