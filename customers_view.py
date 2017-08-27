@@ -6,9 +6,11 @@ import copy
 import tkinter
 import datetime
 import time
+import csv
 
 from PIL import Image, ImageTk
 from tkinter import messagebox
+from tkinter import filedialog
 from tkinter.ttk import *
 from collections import OrderedDict as odict
 
@@ -74,7 +76,7 @@ class CustomersPageApp():
         ###---global static page widget
         ###---analyzed period begin
         query_frame = tkinter.ttk.Frame(self.parent)
-        query_frame.pack(anchor="nw", expand=True, fill="x")
+        query_frame.pack(anchor="nw", expand=False)
         self.period_begin_label_str = tkinter.StringVar()
         self.period_begin_label = tkinter.ttk.Label(query_frame, textvariable=self.period_begin_label_str, style="HM.TLabel")
         self.period_begin_label.pack(side="left", anchor="nw", expand=True)
@@ -161,13 +163,24 @@ class CustomersPageApp():
         filters_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
         filters_separetor.pack(side="top", fill="x")        
         
+        #---save as frame
+        self.saveas_frame = tkinter.ttk.Frame(self.parent)
+        self.saveas_frame.pack(side="top", anchor="nw", fill="x")    
+        self.saveas_label = tkinter.ttk.Label(self.saveas_frame, text="Save as: ",
+                                                  width=len("Save as: ")+3, style="HM.TLabel")
+        self.saveas_label.pack(side="top", anchor="nw", fill="x")
+        self.csv_button = tkinter.ttk.Button(self.saveas_frame, text="csv", command=self.browseCSV)
+        self.csv_button.pack(side="left", anchor="nw", fill="x")
+        saveas_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
+        saveas_separetor.pack(side="top", fill="x")        
+
         ###---disabled field list
         self.disabled_fields_frame = tkinter.ttk.Frame(self.parent)
         self.disabled_fields_frame.pack(side="top", anchor="nw", fill="x")
         self.disabled_label = tkinter.ttk.Label(self.disabled_fields_frame, text="Disabled fields: ",
                                                 width=len("Disabled fields: ")+3, style="HM.TLabel")
         self.disabled_label.pack(anchor="nw")
-        disabled_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")
+        disabled_separetor = tkinter.ttk.Separator(self.parent, orient="horizontal")        
         disabled_separetor.pack(side="top", fill="x")        
 
         ###---create scrollable frame
@@ -310,6 +323,16 @@ class CustomersPageApp():
         for column in range(0, self.parent.grid_size()[0]):
             self.parent.columnconfigure(column, weight=1)
 
+    def browseCSV(self):
+        """Open a asksaveasfile dialog window and store current view in cvs format"""
+        
+        csv_file = filedialog.asksaveasfile(mode="w", defaultextension=".csv")
+        csv_writer = csv.writer(csv_file, lineterminator="\n")
+        for row in self.pdf_matrix:
+            csv_writer.writerow(row)
+
+        csv_file.close()
+        
     def computeCleaning(self):
         return 25.0 if self.widget_view_page["building"]["fields"][-1].tk_var.get() == "Siracusa" else 15.0
 
@@ -404,7 +427,7 @@ class CustomersPageApp():
         customers = self.db_cursor.fetchall()
 
         ###---matrix for pdf output
-        pdf_matrix = [self.pdf_top_row]
+        self.pdf_matrix = [self.pdf_top_row]
         
         ###---create rows for fetched data
         widget_list = list(self.widget_view_page.items())
@@ -490,7 +513,7 @@ class CustomersPageApp():
                     else:
                         field_sum[widget.column] = None
                 
-            pdf_matrix.append(copy.copy(pdf_row))
+            self.pdf_matrix.append(copy.copy(pdf_row))
                 
             next_row += 1
 
@@ -515,12 +538,12 @@ class CustomersPageApp():
                     pdf_row.append(value)
                 next_column += 1
 
-            pdf_matrix.append(copy.copy(pdf_row))
+            self.pdf_matrix.append(copy.copy(pdf_row))
                 
         ###---save as csv and pdf buttons
         doc = SimpleDocTemplate("report.pdf", pagesize=landscape(A4))
         elements = []
-        table = Table(pdf_matrix, len(self.pdf_top_row)*[3*cm], len(pdf_matrix)*[1*cm])
+        table = Table(self.pdf_matrix, len(self.pdf_top_row)*[3*cm], len(self.pdf_matrix)*[1*cm])
         table.setStyle(TableStyle([('ALIGN',(0,0),(0,0),'LEFT'),
                                    ('FONTSIZE', (0, 0), (0, 0), 9),
                                    ('BACKGROUND', (-1, 0), (-1, -1), colors.red)
