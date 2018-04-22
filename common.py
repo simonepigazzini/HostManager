@@ -8,7 +8,9 @@ rooms_bld_map = {"Villa Maria": ["Double", "Triple", "All"], "Palazzo Iargia" : 
 
 agents = ["None", "Mariagrazia", "Salvo"]
 
-agencies = ["None", "Booking", "Airbnb", "Homeaway", "Homeholidays", "Expedia"]
+agencies = ["None", "Booking-Online", "Booking-Hotel", "Airbnb", "Homeaway", "Expedia-Expedia Collect", "Expedia-Hotel Collect"]
+
+internet_opt = ["Not included", "Included"]
 
 customer_default = odict([
         ("id" , -1),
@@ -24,6 +26,8 @@ customer_default = odict([
         ("agency_fee" ,  "fee (euro),"),
         ("agent" , agents),
         ("cleanings" , "Mariagrazia"),
+        ("internet", internet_opt),
+        ("notes", "Notes on customer"),
         ("night_fare" , "price"),
         ("extras" ,  "extras total price"),
         ("total_price" ,  "total"),

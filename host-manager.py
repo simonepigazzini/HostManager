@@ -27,8 +27,8 @@ if __name__ == "__main__":
         cursor.execute(
             '''
             CREATE TABLE Customers(id INTEGER PRIMARY KEY, fullname TEXT, nguests REAL, phone TEXT, 
-            building TEXT, room TEXT, arrival DATE, departure DATE, nights INTEGER, agency TEXT, 
-            agency_fee REAL, agent TEXT, cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, 
+            building TEXT, room TEXT, arrival DATE, departure DATE, nights INTEGER, internet TEXT, notes TEXT, 
+            agency TEXT, agency_fee REAL, agent TEXT, cleanings TEXT, night_fare REAL, extras REAL, total_price REAL, 
             payed REAL, balance REAL)
             '''
         )
