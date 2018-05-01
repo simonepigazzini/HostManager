@@ -227,24 +227,28 @@ class CustomersPageApp():
               {"dummy": ViewPageEntry(self.interior, column=11, label="Agent:")}),
              ("cleanings",
               {"dummy": ViewPageEntry(self.interior, column=12, label="Cleaner:")}),
+             ("internet",
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Internet:")}),
+             ("notes",
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Notes:")}),
              ("night_fare",
-               {"dummy": ViewPageEntry(self.interior, column=13, label="Night fare:")}),
+               {"dummy": ViewPageEntry(self.interior, column=15, label="Night fare:")}),
              ("extras",
-              {"dummy": ViewPageEntry(self.interior, column=14, dosum=True, label="Extras:")}),
+              {"dummy": ViewPageEntry(self.interior, column=16, dosum=True, label="Extras:")}),
              ("total_price",
-              {"dummy": ViewPageEntry(self.interior, column=15, dosum=True, label="Total price:")}),
+              {"dummy": ViewPageEntry(self.interior, column=17, dosum=True, label="Total price:")}),
              ("payed",
-              {"dummy": ViewPageEntry(self.interior, column=16, dosum=True, label="Payed:")}),
+              {"dummy": ViewPageEntry(self.interior, column=18, dosum=True, label="Payed:")}),
              ("balance",
-              {"dummy": ViewPageEntry(self.interior, column=17, dosum=True, label="Balance:")}),
+              {"dummy": ViewPageEntry(self.interior, column=19, dosum=True, label="Balance:")}),
              ("cleaning",
-              {"dummy": ViewPageEntry(self.interior, column=18, dosum=True, label="Cleaning:", function=self.computeCleaning)}),
+              {"dummy": ViewPageEntry(self.interior, column=20, dosum=True, label="Cleaning:", function=self.computeCleaning)}),
              ("agent_fee",
-              {"dummy": ViewPageEntry(self.interior, column=19, dosum=True, label="Agent 10%:", function=self.computeAgent)}),
+              {"dummy": ViewPageEntry(self.interior, column=21, dosum=True, label="Agent 10%:", function=self.computeAgent)}),
              ("iva",
-              {"dummy": ViewPageEntry(self.interior, column=20, dosum=True, label="IVA (11%):", function=self.computeIVA)}),
+              {"dummy": ViewPageEntry(self.interior, column=22, dosum=True, label="IVA (11%):", function=self.computeIVA)}),
              ("net_income",
-              {"dummy": ViewPageEntry(self.interior, column=21, dosum=True, label="Net income:", function=self.netIncome)}),
+              {"dummy": ViewPageEntry(self.interior, column=23, dosum=True, label="Net income:", function=self.netIncome)}),
             ]
         )
         self.forgotten_customers = []
@@ -337,6 +341,8 @@ class CustomersPageApp():
         return 25.0 if self.widget_view_page["building"]["fields"][-1].tk_var.get() == "Siracusa" else 15.0
 
     def computeAgent(self):
+        if self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get() == 'None':
+            self.widget_view_page["agency_fee"]["fields"][-1].tk_var.set("0")
         return (float(self.widget_view_page["total_price"]["fields"][-1].tk_var.get())-self.computeCleaning()-float(self.widget_view_page["agency_fee"]["fields"][-1].tk_var.get()))*0.1
 
     def computeIVA(self):
