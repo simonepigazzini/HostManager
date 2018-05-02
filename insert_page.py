@@ -139,6 +139,7 @@ class InsertPageApp():
         self.widget_insert_page["agency_fee"].callback_map["<FocusOut>"] = self.checkFeeValidity
         self.widget_insert_page["agency_fee"].callback_map["<Key>"] = self.priceCallback
         self.widget_insert_page["night_fare"].callback_map["<Key>"] = self.priceCallback
+        self.widget_insert_page["notes"].callback_map["<FocusOut>"] = self.trivialFieldChecker       
         self.widget_insert_page["extras"].callback_map["<Key>"] = self.priceCallback
         self.widget_insert_page["total_price"].callback_map["<Key>"] = self.priceCallback
         self.widget_insert_page["payed"].callback_map["<Key>"] = self.priceCallback
@@ -225,6 +226,13 @@ class InsertPageApp():
         event.widget.select_range(0, "end")
         return("break")
 
+    def trivialFieldChecker(self, event):
+        """
+        Dummy validation for plain text fields (notes)
+        """
+
+        self.widget_insert_page_item[event.widget].is_good_flag = True
+    
     def checkEmptyField(self, event):
         """
         Validate field: check if field has been filled
