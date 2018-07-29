@@ -409,9 +409,9 @@ class InsertPageApp():
         if new_customer["id"] == -1:
             self.dbc.execute(
                 '''
-                INSERT INTO Customers(fullname, nguests, phone, building, room, arrival, departure, nights, agency, 
+                INSERT INTO Customers(fullname, nguests, phone, building, room, arrival, departure, nights, internet, notes, agency, 
                 agency_fee, agent, cleanings, night_fare, extras, total_price, payed, balance)
-                VALUES(:fullname, :nguests, :phone, :building, :room, :arrival, :departure, :nights, :agency,
+                VALUES(:fullname, :nguests, :phone, :building, :room, :arrival, :departure, :nights, :internet, :notes, :agency,
                 :agency_fee, :agent, :cleanings, :night_fare, :extras, :total_price, :payed, :balance)
                 ''',
             new_customer)
@@ -421,8 +421,8 @@ class InsertPageApp():
                 '''
                 UPDATE Customers SET 
                 fullname = :fullname, nguests = :nguests, phone = :phone, building = :building, 
-                room = :room, arrival = :arrival, departure = :departure, nights = :nights, agency = :agency, 
-                agency_fee = :agency_fee, agent = :agent, cleanings = :cleanings, night_fare = :night_fare, 
+                room = :room, arrival = :arrival, departure = :departure, nights = :nights, internet = :internet, notes = :notes, 
+                agency = :agency, agency_fee = :agency_fee, agent = :agent, cleanings = :cleanings, night_fare = :night_fare, 
                 extras = :extras, total_price = :total_price, payed = :payed, balance = :balance
                 WHERE id = :id
                 ''',

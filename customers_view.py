@@ -15,7 +15,7 @@ from tkinter.ttk import *
 from collections import OrderedDict as odict
 
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, cm, landscape
+from reportlab.lib.pagesizes import A4, mm, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 #import common
@@ -220,17 +220,17 @@ class CustomersPageApp():
              ("nights",
               {"dummy": ViewPageEntry(self.interior, column=8, label="Nights:")}),
              ("internet",
-              {"dummy": ViewPageEntry(self.interior, column=13, label="Internet:")}),
+              {"dummy": ViewPageEntry(self.interior, column=9, label="Internet:")}),
              ("notes",
-              {"dummy": ViewPageEntry(self.interior, column=14, label="Notes:")}),
+              {"dummy": ViewPageEntry(self.interior, column=10, label="Notes:")}),
              ("agency",
-              {"dummy": ViewPageEntry(self.interior, column=9, label="Booking agancy:")}),
+              {"dummy": ViewPageEntry(self.interior, column=11, label="Booking agancy:")}),
              ("agency_fee",
-              {"dummy": ViewPageEntry(self.interior, column=10, dosum=True, label="Agency fee:")}),
+              {"dummy": ViewPageEntry(self.interior, column=12, dosum=True, label="Agency fee:")}),
              ("agent",
-              {"dummy": ViewPageEntry(self.interior, column=11, label="Agent:")}),
+              {"dummy": ViewPageEntry(self.interior, column=13, label="Agent:")}),
              ("cleanings",
-              {"dummy": ViewPageEntry(self.interior, column=12, label="Cleaner:")}),
+              {"dummy": ViewPageEntry(self.interior, column=14, label="Cleaner:")}),
              ("night_fare",
                {"dummy": ViewPageEntry(self.interior, column=15, label="Night fare:")}),
              ("extras",
@@ -378,8 +378,11 @@ class CustomersPageApp():
         customer = {key : cst[i] for i, key in enumerate(common.customer_default)}
         customer["building"] = [customer["building"]] + common.customer_default["building"]
         customer["room"] = common.rooms_bld_map[customer["building"][0]]
+        customer["internet"] = [customer["internet"]] + common.customer_default["internet"]
         customer["agency"] = [customer["agency"]] + common.customer_default["agency"]
         customer["agent"] = [customer["agent"]] + common.customer_default["agent"]        
+        
+        print(customer)
         
         popup = tkinter.Toplevel(self.parent)
         
@@ -493,7 +496,7 @@ class CustomersPageApp():
                     next_column += 1
                     ###---compute sums if applicable
                     if widget_list[index][1]["fields"][-1].dosum:
-                        field_sum[index] += data if data else 0
+                        field_sum[index] += float(data) if data else 0.
                     else:
                         field_sum[index] = None
                     
@@ -549,7 +552,7 @@ class CustomersPageApp():
         ###---save as csv and pdf buttons
         doc = SimpleDocTemplate("report.pdf", pagesize=landscape(A4))
         elements = []
-        table = Table(self.pdf_matrix, len(self.pdf_top_row)*[3*cm], len(self.pdf_matrix)*[1*cm])
+        table = Table(self.pdf_matrix, len(self.pdf_top_row)*[30*mm], len(self.pdf_matrix)*[10*mm])
         table.setStyle(TableStyle([('ALIGN',(0,0),(0,0),'LEFT'),
                                    ('FONTSIZE', (0, 0), (0, 0), 9),
                                    ('BACKGROUND', (-1, 0), (-1, -1), colors.red)
